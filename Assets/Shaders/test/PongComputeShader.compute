@@ -1,0 +1,75 @@
+#pragma kernel Update
+#pragma kernel Draw
+
+RWTexture2D<float4> _Result;
+
+float _Input;
+float _DeltaTime;
+
+RWStructuredBuffer<float4> _Paddle;
+
+struct Ball
+{
+    float4 position;
+    float2 velocity;
+};
+
+RWStructuredBuffer<Ball> _Ball;
+
+float4 _PaddleColor;
+float4 _BallColor;
+float4 _BackgroundColor;
+
+float _Resolution;
+
+bool IsInsideRect(float2 min, float2 max, float2 p)
+{
+    return p.x > min.x && p.x < max.x && p.y > min.y && p.y < max.y;
+}
+
+bool IsInsideCircle(float2 center, float radius, float2 p)
+{
+    return length(abs(center - p)) < radius;
+}
+
+[numthreads(1,1,1)]
+void Update(uint3 id : SV_DispatchThreadID)
+{
+    _Paddle[0].x += _Input * _DeltaTime;
+    float2 ballPosition = _Ball[0].position.xy + (_Ball[0].velocity.xy * _DeltaTime);
+    if (ballPosition.x > _Resolution || ballPosition.x < 0)
+    {
+        ballPosition.x = clamp(ballPosition.x, 0, _Resolution);
+        _Ball[0].velocity.x = -_Ball[0].velocity.x;
+    }
+
+    if (ballPosition.y > _Resolution || ballPosition.y < 0)
+    {
+        ballPosition.y = clamp(ballPosition.y, 0, _Resolution);
+        _Ball[0].velocity.y = -_Ball[0].velocity.y;
+    }
+
+    if (IsInsideRect(_Paddle[0].xy - _Paddle[0].zw, _Paddle[0].xy + _Paddle[0].zw, ballPosition.xy))
+    {
+        _Ball[0].velocity.y = -_Ball[0].velocity.y;
+    }
+
+    _Ball[0].position.xy = ballPosition;
+}
+
+[numthreads(8,8,1)]
+void Draw(uint3 id : SV_DispatchThreadID)
+{
+    if (IsInsideRect(_Paddle[0].xy - _Paddle[0].zw, _Paddle[0].xy + _Paddle[0].zw, id.xy))
+    {
+        _Result[id.xy] = _PaddleColor;
+    }
+    else if (IsInsideCircle(_Ball[0].position.xy, _Ball[0].position.z, id.xy))
+    {
+        _Result[id.xy] = _BallColor;
+    }
+    else
+    {
+        _Result[id.xy] = _BackgroundColor;
+    }
+}
