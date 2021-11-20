@@ -4,9 +4,12 @@ using UnityEngine;
 
 public class FFTOceanRunner : MonoBehaviour
 {
-
+    [Header("海面大小")]
+    /*
+     * 海面大小相关参数
+     */
     [Range(3, 14)]
-    public int FFTPow = 10;         //生成海洋纹理大小 2的次幂，例 为10时，纹理大小为1024*1024
+    public int FFTPow = 10;         //海面 (纹理) 大小的 2的次幂，因为需要用到 FFT
     public int MeshSize = 250;		//网格长宽数量
     public float MeshLength = 10;	//网格长度
     public float A = 10;			//phillips谱参数，影响波浪高度
@@ -29,8 +32,12 @@ public class FFTOceanRunner : MonoBehaviour
     public int ControlM = 12;       //控制m,控制FFT变换阶段
     public bool isControlH = true;  //是否控制横向FFT，否则控制纵向FFT
 
-
-    private int fftSize;			//fft纹理大小 = pow(2,FFTPow)
+    
+    /*
+     * 海面大小
+     */
+    private int fftSize;			// 海面 (纹理) 大小, pow(2, FFTPow), 相当于 Lx = Lz
+    
     private float time = 0;             //时间
 
     private int[] vertIndexs;		//网格三角形索引
@@ -244,7 +251,7 @@ public class FFTOceanRunner : MonoBehaviour
     }
 
     /// <summary>
-    /// 创建网格
+    /// 根据 MeshSize 和 MeshLength 创建海面网格
     /// </summary>
     private void CreateMesh()
     {
