@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class FFTOceanRunner : MonoBehaviour
@@ -38,31 +35,31 @@ public class FFTOceanRunner : MonoBehaviour
     #endregion
 
     #region 海面波浪相关参数
-
+    
+    [Header("海面 Compute Shader")]
+    public ComputeShader OceanCS;   //计算海洋的cs
     [Header("振幅")]
     public float A = 100;			// phillips谱参数，振幅，影响波浪高度
-    
-    public float Lambda = -1;       //用来控制偏移大小
-    public float HeightScale = 1;   //高度影响
-    public float BubblesScale = 1;  //泡沫强度
-    public float BubblesThreshold = 1;//泡沫阈值
+    [Header("偏移大小，高度，泡沫强度，泡沫阈值，时间影响度")]
+    public float Lambda = 20;              // 用来控制偏移大小
+    public float HeightScale = 50;         // 高度影响
+    public float BubblesScale = 1;         // 泡沫强度
+    public float BubblesThreshold = 0.86f; // 泡沫阈值
+    public float TimeScale = 1;            // 时间影响
     [Header("风速及风强")]
     public float WindScale = 2;     //风强
-    public Vector4 WindAndSeed = new Vector4(0.1f, 0.2f, 0, 0); //风速和随机种子，xy为风, zw为两个随机种子
-
-    public float TimeScale = 1;     //时间影响
-    public ComputeShader OceanCS;   //计算海洋的cs
-    public Material OceanMaterial;  //渲染海洋的材质
-
+    public Vector2 Wind = new Vector2(1.0f, 1.0f); //风速
+    [Header("计算 FFT 相关参数，暂时没有用到")]
     [Range(1, 12)]
-    public int ControlM = 12;       //控制m,控制FFT变换阶段
-    public bool isControlH = true;  //是否控制横向FFT，否则控制纵向FFT
+    public int ControlM = 12;       // 控制 m , 控制 FFT 变换阶段
+    public bool isControlH = true;  // 是否控制横向 FFT，否则控制纵向 FFT
 
     #endregion
 
-    #region UI 相关
+    #region 显示相关
     
-    [Header("UI 显示材质")]
+    [Header("显示材质")]
+    public Material OceanMaterial;  //渲染海洋的材质
     public Material DisplaceXMat;   // X 偏移材质
     public Material DisplaceYMat;   // Y 偏移材质
     public Material DisplaceZMat;   // Z 偏移材质
@@ -80,11 +77,6 @@ public class FFTOceanRunner : MonoBehaviour
 
     #endregion
     
-    /*
-     * 时间，用于计算高度频谱
-     */
-    private float time = 0;             //时间
-
     #region Compute Shader 相关数据
 
     private int kernelComputeGaussianRandom;            //计算高斯随机数
@@ -104,7 +96,11 @@ public class FFTOceanRunner : MonoBehaviour
     private RenderTexture OutputRT;                     //临时储存输出纹理
     private RenderTexture NormalRT;                     //法线纹理
     private RenderTexture BubblesRT;                    //泡沫纹理
-
+    /*
+     * 时间，用于计算高度频谱
+     */
+    private float time = 0;
+    
     #endregion
     
     #region 创建海面网格
@@ -211,11 +207,9 @@ public class FFTOceanRunner : MonoBehaviour
         kernelFFTVerticalEnd = OceanCS.FindKernel("FFTVerticalEnd");
         kernelTextureGenerationDisplace = OceanCS.FindKernel("TextureGenerationDisplace");
         kernelTextureGenerationNormalBubbles = OceanCS.FindKernel("TextureGenerationNormalBubbles");
-
         //设置ComputerShader数据
         OceanCS.SetInt("N", fftSize);
         OceanCS.SetFloat("OceanLength", MeshLength);
-        
         //生成高斯随机数
         OceanCS.SetTexture(kernelComputeGaussianRandom, "GaussianRandomRT", GaussianRandomRT);
         OceanCS.Dispatch(kernelComputeGaussianRandom, fftSize / 8, fftSize / 8, 1);
@@ -239,45 +233,40 @@ public class FFTOceanRunner : MonoBehaviour
     private void Update()
     {
         time += Time.deltaTime * TimeScale;
-        //计算海洋数据
-        ComputeOceanValue();
-
+        // 计算海洋数据
+        ComputeOcean();
+        // 设置纹理材质
+        SetMaterialTex();
     }
     
     /// <summary>
     /// 计算海洋数据
     /// </summary>
-    private void ComputeOceanValue()
+    private void ComputeOcean()
     {
         // 振幅
         OceanCS.SetFloat("A", A);
-        WindAndSeed.z = Random.Range(1, 10f);
-        WindAndSeed.w = Random.Range(1, 10f);
         // 风速
-        Vector2 wind = new Vector2(WindAndSeed.x, WindAndSeed.y);
+        Vector2 wind = new Vector2(Wind.x, Wind.y);
         wind.Normalize();
         wind *= WindScale;
-        
-        
-        OceanCS.SetVector("WindAndSeed", new Vector4(wind.x, wind.y, WindAndSeed.z, WindAndSeed.w));
+        OceanCS.SetVector("Wind", new Vector2(wind.x, wind.y));
+        // 设置影响因子
         OceanCS.SetFloat("Lambda", Lambda);
         OceanCS.SetFloat("HeightScale", HeightScale);
         OceanCS.SetFloat("BubblesScale", BubblesScale);
         OceanCS.SetFloat("BubblesThreshold",BubblesThreshold);
-
         //生成高度频谱
         OceanCS.SetFloat("Time", time);
         OceanCS.SetTexture(kernelCreateHeightSpectrum, "GaussianRandomRT", GaussianRandomRT);
         OceanCS.SetTexture(kernelCreateHeightSpectrum, "HeightSpectrumRT", HeightSpectrumRT);
         OceanCS.Dispatch(kernelCreateHeightSpectrum, fftSize / 8, fftSize / 8, 1);
-
         //生成偏移频谱
         OceanCS.SetTexture(kernelCreateDisplaceSpectrum, "HeightSpectrumRT", HeightSpectrumRT);
         OceanCS.SetTexture(kernelCreateDisplaceSpectrum, "DisplaceXSpectrumRT", DisplaceXSpectrumRT);
         OceanCS.SetTexture(kernelCreateDisplaceSpectrum, "DisplaceZSpectrumRT", DisplaceZSpectrumRT);
         OceanCS.Dispatch(kernelCreateDisplaceSpectrum, fftSize / 8, fftSize / 8, 1);
-
-        //进行横向FFT
+        // 进行横向 FFT
         for (int m = 1; m <= FFTPow; m++)
         {
             int ns = (int)Mathf.Pow(2, m - 1);
@@ -301,7 +290,7 @@ public class FFTOceanRunner : MonoBehaviour
             //     return;
             // }
         }
-        //进行纵向FFT
+        // 进行纵向 FFT
         for (int m = 1; m <= FFTPow; m++)
         {
             int ns = (int)Mathf.Pow(2, m - 1);
@@ -325,26 +314,19 @@ public class FFTOceanRunner : MonoBehaviour
             //     return;
             // }
         }
-
-        //计算纹理偏移
+        // 生成偏移纹理
         OceanCS.SetTexture(kernelTextureGenerationDisplace, "HeightSpectrumRT", HeightSpectrumRT);
         OceanCS.SetTexture(kernelTextureGenerationDisplace, "DisplaceXSpectrumRT", DisplaceXSpectrumRT);
         OceanCS.SetTexture(kernelTextureGenerationDisplace, "DisplaceZSpectrumRT", DisplaceZSpectrumRT);
         OceanCS.SetTexture(kernelTextureGenerationDisplace, "DisplaceRT", DisplaceRT);
         OceanCS.Dispatch(kernelTextureGenerationDisplace, fftSize / 8, fftSize / 8, 1);
-
         //生成法线和泡沫纹理
         OceanCS.SetTexture(kernelTextureGenerationNormalBubbles, "DisplaceRT", DisplaceRT);
         OceanCS.SetTexture(kernelTextureGenerationNormalBubbles, "NormalRT", NormalRT);
         OceanCS.SetTexture(kernelTextureGenerationNormalBubbles, "BubblesRT", BubblesRT);
         OceanCS.Dispatch(kernelTextureGenerationNormalBubbles, fftSize / 8, fftSize / 8, 1);
-
-        SetMaterialTex();
     }
 
-    
-
-    
     /// <summary>
     /// 利用 FFT 计算海面高度
     /// </summary>
@@ -355,13 +337,11 @@ public class FFTOceanRunner : MonoBehaviour
         OceanCS.SetTexture(kernel, "InputRT", input);
         OceanCS.SetTexture(kernel, "OutputRT", OutputRT);
         OceanCS.Dispatch(kernel, fftSize / 8, fftSize / 8, 1);
-
         //交换输入输出纹理
         RenderTexture rt = input;
         input = OutputRT;
         OutputRT = rt;
     }
-    
     
     //设置材质纹理
     private void SetMaterialTex()
@@ -370,7 +350,6 @@ public class FFTOceanRunner : MonoBehaviour
         OceanMaterial.SetTexture("_Displace", DisplaceRT);
         OceanMaterial.SetTexture("_Normal", NormalRT);
         OceanMaterial.SetTexture("_Bubbles", BubblesRT);
-
         //设置显示纹理
         DisplaceXMat.SetTexture("_MainTex", DisplaceXSpectrumRT);
         DisplaceYMat.SetTexture("_MainTex", HeightSpectrumRT);
@@ -382,6 +361,8 @@ public class FFTOceanRunner : MonoBehaviour
     }
 
     #endregion
+
+    #region 结束释放内存
 
     /// <summary>
     /// 释放内存
@@ -398,4 +379,7 @@ public class FFTOceanRunner : MonoBehaviour
         NormalRT.Release();
         BubblesRT.Release();
     }
+
+    #endregion
+    
 }

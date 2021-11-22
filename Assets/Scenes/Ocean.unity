@@ -828,7 +828,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 0, y: 20, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 263844321}
@@ -1723,7 +1723,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2115281517}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -13, z: 0}
+  m_LocalPosition: {x: 0, y: -10, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1756,18 +1756,18 @@ MonoBehaviour:
   FFTPow: 9
   MeshSize: 100
   MeshLength: 512
+  OceanCS: {fileID: 7200000, guid: ce2dc188d6b7f8542a8cecaa5b6ca1e0, type: 3}
   A: 100
-  Lambda: 8
-  HeightScale: 28.8
+  Lambda: 20
+  HeightScale: 50
   BubblesScale: 1
   BubblesThreshold: 0.86
-  WindScale: 30
-  WindAndSeed: {x: 1, y: 1, z: 0, w: 0}
   TimeScale: 2
-  OceanCS: {fileID: 7200000, guid: ce2dc188d6b7f8542a8cecaa5b6ca1e0, type: 3}
-  OceanMaterial: {fileID: 2100000, guid: 32d305628467bed458c80096323b56bc, type: 2}
+  WindScale: 30
+  Wind: {x: 1, y: 1}
   ControlM: 6
   isControlH: 0
+  OceanMaterial: {fileID: 2100000, guid: 32d305628467bed458c80096323b56bc, type: 2}
   DisplaceXMat: {fileID: 2100000, guid: c08289b494e544946b0f4ee7bbaf3103, type: 2}
   DisplaceYMat: {fileID: 2100000, guid: bf894c2034355014381a7eb6e9cb0e9f, type: 2}
   DisplaceZMat: {fileID: 2100000, guid: bdbcf05e3f4e42e47ba55aa138bffa73, type: 2}

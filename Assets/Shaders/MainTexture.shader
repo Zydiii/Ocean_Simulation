@@ -15,7 +15,6 @@ Shader "OceanSimulation/MainTexture"
 			
 			#pragma vertex vert
 			#pragma fragment frag
-
 			
 			#include "UnityCG.cginc"
 
