@@ -125,7 +125,7 @@ float DonelanBannerDirectionalSpreading(float2 k)
         betaS = pow(10, epsilon);
     }
     // theta = arctan(k_y, k_x) - arctan(wind_y, wind_x)
-    float theta = atan2(k.y, k.x);
+    float theta = atan2(k.y, k.x) - atan2(Wind.y, Wind.x);
     // D(w, theta) = betaS / 2 tanh(betaS * \pi) sech(\betaS \theta)^2
     return betaS / max(1e-7f, 2.0f * tanh(betaS * PI) * pow(cosh(betaS * theta), 2));
 }

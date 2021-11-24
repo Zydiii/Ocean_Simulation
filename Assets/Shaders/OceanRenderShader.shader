@@ -24,6 +24,7 @@ Shader "OceanSimulation/Ocean"
             
             #pragma vertex vert
             #pragma fragment frag
+            #pragma enable_d3d11_debug_symbols
             
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
@@ -71,11 +72,92 @@ Shader "OceanSimulation/Ocean"
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
                 return o;
             }
+
+            fixed meanFresnel(float cosThetaV, float sigmaV)
+            {
+                return pow(1.0 - cosThetaV, 5.0 * exp(-2.69 * sigmaV)) / (1.0 + 22.7 * pow(sigmaV, 1.5));
+            }
+
+            // V, N in world space
+            float meanFresnel(fixed3 V, fixed3 N, fixed2 sigmaSq) {
+                fixed length2 = 1.0 - V.z * V.z;
+                fixed cosPhi2 = V.x * V.x / length2;
+                fixed sinPhi2 = V.y * V.y / length2;
+                fixed2 t = fixed2(cosPhi2, sinPhi2); // cos^2 and sin^2 of view direction
+                float sigmaV2 = dot(t, sigmaSq); // slope variance in view direction
+                return meanFresnel(dot(V, N), sqrt(sigmaV2));
+            }
+
+            // V, N, Tx, Ty in world space
+            fixed3 U(fixed2 zeta, fixed3 V, fixed3 N) {
+                fixed3 f = normalize(fixed3(-zeta, 1.0)); // tangent space
+                fixed3 F = f.x + f.y + f.z * N; // world space
+                fixed3 R = 2.0 * dot(F, V) * F - V;
+                return R;
+            }
+
+            // V, N, Tx, Ty in world space;
+            fixed3 meanSkyRadiance(fixed3 V, fixed3 N, fixed2 sigmaSq) {
+                //fixed eps = 0.001;
+                fixed3 u0 = U(fixed2(0.0, 0.0), V, N);
+                //fixed3 dux = 2.0 * (U(fixed2(eps, 0.0), V, N, Tx, Ty) - u0) / eps * sqrt(sigmaSq.x);
+                //fixed3 duy = 2.0 * (U(fixed2(0.0, eps), V, N, Tx, Ty) - u0) / eps * sqrt(sigmaSq.y);
+                // 粗糙度，采样反射探头，环境光照反射
+                float roughness = _Roughness * (1.7 - 0.7 * _Roughness);
+                half mip = roughness * 6;
+                half4 rgbm = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, u0, mip);
+                half3 sky = DecodeHDR(rgbm, unity_SpecCube0_HDR);
+                return sky;
+            }
+
+            // assumes x>0
+            float erfc(float x) {
+                return 2.0 * exp(-x * x) / (2.319 * x + sqrt(4.0 + 1.52 * x * x));
+            }
+
+            float Lambda(float cosTheta, float sigmaSq) {
+                float v = cosTheta / sqrt((1.0 - cosTheta * cosTheta) * (2.0 * sigmaSq));
+                return max(0.0, (exp(-v * v) - v * sqrt(UNITY_PI) * erfc(v)) / (2.0 * v * sqrt(UNITY_PI)));
+                //return (exp(-v * v)) / (2.0 * v * sqrt(M_PI)); // approximate, faster formula
+            }
+
+            // L, V, N, Tx, Ty in world space
+            float reflectedSunRadiance(fixed3 L, fixed3 V, fixed3 N, fixed2 sigmaSq) {
+                fixed3 H = normalize(L + V);
+
+                float zL = dot(L, N); // cos of source zenith angle
+                float zV = dot(V, N); // cos of receiver zenith angle
+                float zH = dot(H, N); // cos of facet normal zenith angle
+                float zH2 = zH * zH;
+
+                sigmaSq = max(sigmaSq, 2e-5);
+                float p = exp(-1.0f) / (2.0 * UNITY_PI * sqrt(sigmaSq.x * sigmaSq.y));
+
+                fixed lengthV2 = 1 - V.z * V.z;
+                fixed SinV2 = V.y * V.y / lengthV2;
+                fixed CosV2 = V.x * V.x / lengthV2;
+                float sigmaV2 = sigmaSq.x * CosV2 + sigmaSq.y * SinV2;
+
+
+                fixed lengthL2 = 1 - L.z * L.z;
+                fixed SinL2 = L.y * L.y / lengthL2;
+                fixed CosL2 = L.x * L.x / lengthL2;
+                float sigmaL2 = sigmaSq.x * CosL2 + sigmaSq.y * SinL2;
+
+                float fresnel = 0.02 + 0.98 * pow(1.0 - dot(V, H), 5.0);
+
+                zL = max(zL, 0.01);
+                zV = max(zV, 0.01);
+
+                return fresnel * p / ((1.0 + Lambda(zL, sigmaL2) + Lambda(zV, sigmaV2)) * zV * zH2 * zH2 * 4.0);
+                //return p;
+            }
             
             fixed4 frag(v2f i): SV_Target
             {
                 // 通过法线贴图获取法线，并且转换成世界坐标
                 fixed3 normal = UnityObjectToWorldNormal(tex2D(_Normal, i.uv).rgb);
+                fixed2 sigmaSq = fixed2(normal.x * normal.x, normal.z * normal.z);
                 // 通过泡沫纹理获取泡沫强度
                 fixed bubbles = tex2D(_Bubbles, i.uv).r;
                 // 光照方向，视线方向，反射方向
@@ -88,7 +170,8 @@ Shader "OceanSimulation/Ocean"
                 half4 rgbm = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflectDir, mip);
                 half3 sky = DecodeHDR(rgbm, unity_SpecCube0_HDR);
                 // 菲涅尔
-                fixed fresnel = saturate(_FresnelScale + (1 - _FresnelScale) * pow(1 - dot(normal, viewDir), 5));
+                fixed fresnel =  0.02 + 0.98 * meanFresnel(viewDir, normal, sigmaSq);
+                fresnel = saturate(_FresnelScale + (1 - _FresnelScale) * pow(1 - dot(normal, viewDir), 5));
                 // 折射方向，混合深海颜色和浅海颜色
                 half facing = saturate(dot(viewDir, normal));                
                 fixed3 oceanColor = lerp(_OceanColorShallow, _OceanColorDeep, facing);
@@ -99,18 +182,35 @@ Shader "OceanSimulation/Ocean"
                 fixed3 bubblesDiffuse = _BubblesColor.rbg * _LightColor0.rgb * saturate(dot(lightDir, normal));
 
                 // 海洋颜色
-                // 漫反射
-                fixed3 oceanDiffuse = oceanColor * _LightColor0.rgb * saturate(dot(lightDir, normal));
                 // 半向量，反射光，高光
                 fixed3 halfDir = normalize(lightDir + viewDir);
                 fixed3 specular = _LightColor0.rgb * _Specular.rgb * pow(max(0, dot(normal, halfDir)), _Gloss);
-
+                // 漫反射
+                fixed3 oceanDiffuse = oceanColor * _LightColor0.rgb * saturate(dot(lightDir, normal));
                 // 根据泡沫权重获得海洋的漫反射颜色，插值海洋和泡沫颜色
                 fixed3 diffuse = lerp(oceanDiffuse, bubblesDiffuse, bubbles);
 
                 // 获得最终的颜色，环境光 + 漫反射和天空反射光，根据菲涅尔项判定反光程度，倒影 + 高光
                 // 平视的时候反射光特别强
-                fixed3 col = ambient + lerp(diffuse, sky, fresnel) + specular;
+                fixed3 col = fixed3(0.0f, 0.0f, 0.0f);
+                // 太阳颜色
+                fixed3 Lsun = _LightColor0.rgb / 2000.0f;
+                // if(reflectedSunRadiance(lightDir, viewDir, normal, sigmaSq) > 1000000000)
+                //     col = fixed3(1.0f, 0.0f, 0.0f);
+                // else
+                //     col = fixed3(1.0f, 1.0f, 1.0f);
+                col += reflectedSunRadiance(lightDir, viewDir, normal, sigmaSq) * Lsun;
+                // 天空颜色 Sky light
+                col += fresnel * meanSkyRadiance(viewDir, normal, sigmaSq);
+                // 海水颜色 Refracted light
+                fixed3 Lsea = oceanDiffuse * sky;
+                col += Lsea * (1 - fresnel);
+
+                col = lerp(col, bubblesDiffuse.rbg, bubbles);
+                // 海水环境光和高光
+                //col += ambient;
+                //col += specular;
+                //col = ambient + lerp(diffuse, sky, fresnel) + specular;
                 return fixed4(col, 1);
             }
             
