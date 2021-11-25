@@ -12,14 +12,22 @@ Shader "OceanSimulation/Ocean"
         _Displace ("Displace", 2D) = "black" { } // 位移贴图
         _Normal ("Normal", 2D) = "black" { } // 法线贴图
         _Bubbles ("Bubbles", 2D) = "black" { } // 泡沫贴图
+        _DepthMaxDistance ("Depth Max Distance", float) = 150.0 // 深度
+        _FoamDistance("Foam Distance", Float) = 100 // 泡沫检测
+        //用下边这两个参数代替之前声明的泡沫产生距离参数
+        _FoamMaxDistance("Foam Maximum Distance", Float) = 0.4
+        _FoamMinDistance("Foam Minimum Distance", Float) = 0.04
     }
     SubShader
     {
-        Tags { "RenderType" = "Opaque" "LightMode" = "ForwardBase" }
+        Tags { "RenderType" = "Opaque" "LightMode" = "ForwardBase" "Queue" = "Transparent" }
         LOD 100
         
         Pass
         {
+            Blend SrcAlpha OneMinusSrcAlpha 
+            ZWrite Off 
+            
             CGPROGRAM
             
             #pragma vertex vert
@@ -40,6 +48,7 @@ Shader "OceanSimulation/Ocean"
                 float4 pos: SV_POSITION;
                 float2 uv: TEXCOORD0;
                 float3 worldPos: TEXCOORD1;
+                float4 screenPosition : TEXCOORD2;
             };
             
             fixed4 _OceanColorShallow;
@@ -53,6 +62,14 @@ Shader "OceanSimulation/Ocean"
             sampler2D _Normal;
             sampler2D _Bubbles;
             float4 _Displace_ST;
+            sampler2D _CameraDepthTexture;
+            fixed _DepthMaxDistance;
+            float _FoamDistance;
+            sampler2D _CameraNormalsTexture;
+            float _FoamMaxDistance;
+            float _FoamMinDistance;
+            sampler2D _CameraOpaqueTexture;
+            sampler2D sampler_CameraOpaqueTexture;
             
             v2f vert(appdata v)
             {
@@ -70,6 +87,8 @@ Shader "OceanSimulation/Ocean"
                 o.pos = UnityObjectToClipPos(v.vertex);
                 // 世界坐标
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                // 屏幕坐标
+                o.screenPosition = ComputeScreenPos(o.pos);
                 return o;
             }
 
@@ -155,8 +174,30 @@ Shader "OceanSimulation/Ocean"
             
             fixed4 frag(v2f i): SV_Target
             {
+                // 在片元着色器中采样深度纹理
+                float existingDepth01 = tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.screenPosition)).r;
+                float existingDepthLinear = LinearEyeDepth(existingDepth01);
+                // 水面深度
+                float waterDepth = i.screenPosition.w;    //水面深度
+                float depthDifference = existingDepthLinear - waterDepth;   //两者差值
+                float waterDepthDifference01 = saturate(depthDifference / _DepthMaxDistance);
+                // 泡沫深度
+	            float foamDepthDifference01 = saturate(depthDifference / _FoamDistance);
+                
                 // 通过法线贴图获取法线，并且转换成世界坐标
                 fixed3 normal = UnityObjectToWorldNormal(tex2D(_Normal, i.uv).rgb);
+
+                // 屏幕 UV 坐标
+                float2 screenUV = i.screenPosition.xy / i.screenPosition.w;
+
+                // 计算水面的 view space 法线
+                fixed3 waterNormal = UnityObjectToViewPos(normal);
+                float3 existingNormal = tex2Dproj(_CameraNormalsTexture, UNITY_PROJ_COORD(i.screenPosition));
+                float3 normalDot = saturate(dot(existingNormal, waterNormal));
+                //用Lerp插值泡沫距离，并且将它应用到之前的操作中
+                float foamDistance = lerp(_FoamMaxDistance, _FoamMinDistance, normalDot);
+                //foamDepthDifference01 = saturate(depthDifference / foamDistance);
+                
                 fixed2 sigmaSq = fixed2(normal.x * normal.x, normal.z * normal.z);
                 // 通过泡沫纹理获取泡沫强度
                 fixed bubbles = tex2D(_Bubbles, i.uv).r;
@@ -164,6 +205,7 @@ Shader "OceanSimulation/Ocean"
                 fixed3 lightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
                 fixed3 viewDir = normalize(UnityWorldSpaceViewDir(i.worldPos));
                 fixed3 reflectDir = reflect(-viewDir, normal);
+                reflectDir = BoxProjectedCubemapDirection(reflectDir, i.worldPos, unity_SpecCube0_ProbePosition, unity_SpecCube0_BoxMin, unity_SpecCube0_BoxMax);
                 // 粗糙度，采样反射探头，环境光照反射
                 float roughness = _Roughness * (1.7 - 0.7 * _Roughness);
                 half mip = roughness * 6;
@@ -211,6 +253,11 @@ Shader "OceanSimulation/Ocean"
                 //col += ambient;
                 //col += specular;
                 //col = ambient + lerp(diffuse, sky, fresnel) + specular;
+                //col = fixed3(depthDifference, depthDifference, depthDifference);
+                float3 waterColor = lerp(col, col * 0.1f + _OceanColorDeep, waterDepthDifference01);
+                float3 foamColor = lerp(_BubblesColor.rbg, waterColor, foamDepthDifference01);
+                col = foamColor ;
+                
                 return fixed4(col, 1);
             }
             
