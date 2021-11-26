@@ -1,4 +1,4 @@
-Shader "OceanSimulation/Ocean"
+Shader "OceanSimulation/OceanTest"
 {
     Properties
     {
@@ -213,7 +213,7 @@ Shader "OceanSimulation/Ocean"
                 half3 sky = DecodeHDR(rgbm, unity_SpecCube0_HDR);
                 // 菲涅尔
                 fixed fresnel =  0.02 + 0.98 * meanFresnel(viewDir, normal, sigmaSq);
-                //fresnel = saturate(_FresnelScale + (1 - _FresnelScale) * pow(1 - dot(normal, viewDir), 5));
+                fresnel = saturate(_FresnelScale + (1 - _FresnelScale) * pow(1 - dot(normal, viewDir), 5));
                 // 折射方向，混合深海颜色和浅海颜色
                 half facing = saturate(dot(viewDir, normal));                
                 fixed3 oceanColor = lerp(_OceanColorShallow, _OceanColorDeep, facing);
@@ -248,11 +248,11 @@ Shader "OceanSimulation/Ocean"
                 fixed3 Lsea = diffuse * sky;
                 col += Lsea * (1 - fresnel);
 
-                col = lerp(col, bubblesDiffuse.rbg, bubbles);
+                //col = lerp(col, bubblesDiffuse.rbg, bubbles);
                 // 海水环境光和高光
                 //col += ambient;
                 //col += specular;
-                //col = ambient + lerp(diffuse, sky, fresnel) + specular;
+                col = ambient + lerp(diffuse, sky, fresnel) + specular;
                 //col = fixed3(depthDifference, depthDifference, depthDifference);
                 float3 waterColor = lerp(col, col * 0.1f + _OceanColorDeep, waterDepthDifference01);
                 float3 foamColor = lerp(_BubblesColor.rbg, waterColor, foamDepthDifference01);

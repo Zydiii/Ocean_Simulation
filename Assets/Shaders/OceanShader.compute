@@ -313,8 +313,8 @@ void TextureGenerationNormalBubbles(uint3 id: SV_DispatchThreadID)
     float3 z1 = float3(z1D.xy, z1D.z - uintLength); // 在 z 轴 第一个点的坐标
     float3 z2 = float3(z1D.xy, z1D.z + uintLength); // 在 z 轴 第二个点的坐标
     // 计算两个切向量
-    float3 tangentX = x2 - x1;
-    float3 tangentZ = z2 - z1;
+    float3 tangentX = (x2 - x1) / 2.0f;
+    float3 tangentZ = (z2 - z1) / 2.0f;
     // 计算法线
     float3 normal = normalize(cross(tangentZ, tangentX));
     
