@@ -71,12 +71,14 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
-    - _DepthMaxDistance: -1
+    - _DepthMaxDistance: 150
+    - _DepthVisibility: 10
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _FoamDistance: 0
-    - _FoamMaxDistance: 0
-    - _FoamMinDistance: 0
+    - _EmissionStrength: 0.08
+    - _FoamDistance: 20
+    - _FoamMaxDistance: 100
+    - _FoamMinDistance: 100
     - _FresnelScale: 0.02
     - _Gloss: 256
     - _GlossMapScale: 1
@@ -87,6 +89,9 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Roughness: 0
+    - _SSSHeight: 100
+    - _SSSIntensity: 10
+    - _SSSPow: 0.8
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -97,6 +102,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _OceanColorDeep: {r: 0.050980393, g: 0.14509805, b: 0.20784314, a: 1}
+    - _OceanColorSSS: {r: 0.3843137, g: 1, b: 0.9647059, a: 0.39215687}
     - _OceanColorShallow: {r: 0.30588236, g: 0.47058824, b: 0.54901963, a: 1}
     - _Specular: {r: 0.39607844, g: 0.39607844, b: 0.39607844, a: 1}
   m_BuildTextureStacks: []

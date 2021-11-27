@@ -1326,17 +1326,17 @@ MonoBehaviour:
   MeshSize: 255
   MeshLength: 1024
   OceanCS: {fileID: 7200000, guid: ce2dc188d6b7f8542a8cecaa5b6ca1e0, type: 3}
-  A: 0
-  Lambda: 8
-  HeightScale: 28.8
-  BubblesScale: 1
+  A: 100
+  Lambda: 15
+  HeightScale: 50
+  BubblesScale: 2
   BubblesThreshold: 0.86
   TimeScale: 2
   WindScale: 30
   Wind: {x: 1, y: 1}
   ControlM: 6
   isControlH: 0
-  OceanMaterial: {fileID: 2100000, guid: 4705762f9ab8bc94ba195a1870de67af, type: 2}
+  OceanMaterial: {fileID: 2100000, guid: 0ba6d7b24c0c48f43bcf4fdc2b7c4a7d, type: 2}
   DisplaceXMat: {fileID: 2100000, guid: c08289b494e544946b0f4ee7bbaf3103, type: 2}
   DisplaceYMat: {fileID: 2100000, guid: bf894c2034355014381a7eb6e9cb0e9f, type: 2}
   DisplaceZMat: {fileID: 2100000, guid: bdbcf05e3f4e42e47ba55aa138bffa73, type: 2}
@@ -1806,7 +1806,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1794007664}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1b51c9583d1919d44a46f9f424bb82b7, type: 3}
   m_Name: 

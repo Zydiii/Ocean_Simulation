@@ -13,14 +13,20 @@ Shader "OceanSimulation/OceanTest"
         _Normal ("Normal", 2D) = "black" { } // 法线贴图
         _Bubbles ("Bubbles", 2D) = "black" { } // 泡沫贴图
         _DepthMaxDistance ("Depth Max Distance", float) = 150.0 // 深度
+        _DepthVisibility ("Depth Visibility", float) = 100.0 // 可见度
         _FoamDistance("Foam Distance", Float) = 100 // 泡沫检测
         //用下边这两个参数代替之前声明的泡沫产生距离参数
         _FoamMaxDistance("Foam Maximum Distance", Float) = 0.4
         _FoamMinDistance("Foam Minimum Distance", Float) = 0.04
+        _OceanColorSSS ("Ocean Color SSS", Color) = (1, 1, 1, 1)
+        _SSSPow ("SSS Pow", Range(.001, 5)) = .5
+        _SSSHeight ("SSS Height", float) = .5
+        _SSSIntensity ("SSS Intensity", float) = .5
+        _EmissionStrength ("Emission Strength", Range(0.001, 100)) = .5
     }
     SubShader
     {
-        Tags { "RenderType" = "Opaque" "LightMode" = "ForwardBase" "Queue" = "Transparent" }
+        Tags { "RenderType" = "Transparent" "LightMode" = "ForwardBase" "Queue" = "Transparent" }
         LOD 100
         
         Pass
@@ -70,6 +76,12 @@ Shader "OceanSimulation/OceanTest"
             float _FoamMinDistance;
             sampler2D _CameraOpaqueTexture;
             sampler2D sampler_CameraOpaqueTexture;
+            float _DepthVisibility;
+            float _SSSPow;
+            float _SSSIntensity;
+            float _SSSHeight;
+            float _EmissionStrength;
+            fixed4 _OceanColorSSS;
             
             v2f vert(appdata v)
             {
@@ -171,6 +183,13 @@ Shader "OceanSimulation/OceanTest"
                 return fresnel * p / ((1.0 + Lambda(zL, sigmaL2) + Lambda(zV, sigmaV2)) * zV * zH2 * zH2 * 4.0);
                 //return p;
             }
+
+            float4 CalculateSSSColor(float3 lightDirection, float3 worldNormal, float3 viewDir, float shadowFactor)
+            {
+                    float lightStrength = sqrt(saturate(lightDirection.y));
+                    float SSSFactor = pow(saturate(dot(viewDir ,lightDirection) )+saturate(dot(worldNormal ,-lightDirection)) ,_SSSPow) * shadowFactor * lightStrength * _EmissionStrength;
+                    return _OceanColorSSS * SSSFactor;
+            }
             
             fixed4 frag(v2f i): SV_Target
             {
@@ -183,6 +202,8 @@ Shader "OceanSimulation/OceanTest"
                 float waterDepthDifference01 = saturate(depthDifference / _DepthMaxDistance);
                 // 泡沫深度
 	            float foamDepthDifference01 = saturate(depthDifference / _FoamDistance);
+                float alpha = saturate(depthDifference / _DepthVisibility);
+                alpha = lerp(alpha, 1, foamDepthDifference01);
                 
                 // 通过法线贴图获取法线，并且转换成世界坐标
                 fixed3 normal = UnityObjectToWorldNormal(tex2D(_Normal, i.uv).rgb);
@@ -248,17 +269,23 @@ Shader "OceanSimulation/OceanTest"
                 fixed3 Lsea = diffuse * sky;
                 col += Lsea * (1 - fresnel);
 
+
                 //col = lerp(col, bubblesDiffuse.rbg, bubbles);
                 // 海水环境光和高光
                 //col += ambient;
                 //col += specular;
                 col = ambient + lerp(diffuse, sky, fresnel) + specular;
-                //col = fixed3(depthDifference, depthDifference, depthDifference);
-                float3 waterColor = lerp(col, col * 0.1f + _OceanColorDeep, waterDepthDifference01);
-                float3 foamColor = lerp(_BubblesColor.rbg, waterColor, foamDepthDifference01);
-                //col = waterColor ;
 
-                return fixed4(col, 1);
+                fixed4 sss = CalculateSSSColor(lightDir, normal, viewDir,_SSSIntensity);
+                col = (1 - sss.a) * col + sss.a * sss;
+                
+                //col = fixed3(depthDifference, depthDifference, depthDifference);
+                float3 waterColor = lerp(col, col * 0.1 + _OceanColorDeep, waterDepthDifference01);
+                float3 foamColor = lerp(_BubblesColor.rbg, waterColor, foamDepthDifference01);
+                //col = waterColor;
+                col = foamColor;
+
+                return fixed4(col, alpha);
             }
             
             ENDCG

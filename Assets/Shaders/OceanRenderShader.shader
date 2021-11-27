@@ -252,7 +252,7 @@ Shader "OceanSimulation/Ocean"
                 // 海水环境光和高光
                 //col += ambient;
                 //col += specular;
-                //col = ambient + lerp(diffuse, sky, fresnel) + specular;
+                col = ambient + lerp(diffuse, sky, fresnel) + specular;
                 //col = fixed3(depthDifference, depthDifference, depthDifference);
                 float3 waterColor = lerp(col, col * 0.1f + _OceanColorDeep, waterDepthDifference01);
                 float3 foamColor = lerp(_BubblesColor.rbg, waterColor, foamDepthDifference01);

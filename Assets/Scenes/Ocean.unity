@@ -1849,7 +1849,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98dd1be3485f25d44b5b3afd6f0bf747, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FFTPow: 10
+  FFTPow: 9
   MeshSize: 255
   MeshLength: 1024
   OceanCS: {fileID: 7200000, guid: ce2dc188d6b7f8542a8cecaa5b6ca1e0, type: 3}
