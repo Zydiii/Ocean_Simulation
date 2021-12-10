@@ -1,0 +1,52 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel GetHeight
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> heightRT;
+float HeightScale;
+int particleNum;
+StructuredBuffer<float3> particlePos;
+int size;
+Texture2D inputTexture;
+
+void setPos();
+
+[numthreads(8,8,1)]
+void GetHeight (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+    //heightRT[id.xy] = float4(0, (id.x + id.y) % 8 * HeightScale, 0.0, 0.0);
+    float r = inputTexture[id.xy].r;
+    float g = inputTexture[id.xy].g;
+    float b = inputTexture[id.xy].b;
+    heightRT[id.xy] = float4(r, g, b, 1.0);
+}
+
+void setPos()
+{
+    for(int i = 0; i < particleNum; i++)
+    {
+        float x0 = particlePos[i].x;
+        float y0 = particlePos[i].x;
+
+        for(int j = -10; i <= 10; j++)
+        {
+            float x1 = x0 + j;
+            for(int k = -10; k <= 10; k++)
+            {
+                float y1 = y0 + k;
+                if(x1 > -size / 2 && x1 < size / 2 && y1 > -size / 2 && y1 < size / 2)
+                {
+                    float2 p = float2(x1, y1);
+                    heightRT[p] = float4(1, 1, 1, 1);
+                }
+            }
+        }
+    }
+}
+
+bool IsInsideRect(float2 min, float2 max, float2 p)
+{
+    return p.x > min.x && p.x < max.x && p.y > min.y && p.y < max.y;
+}
