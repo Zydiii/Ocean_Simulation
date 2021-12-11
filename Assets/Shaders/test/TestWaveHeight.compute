@@ -9,6 +9,7 @@ int particleNum;
 StructuredBuffer<float3> particlePos;
 int size;
 Texture2D inputTexture;
+StructuredBuffer<float4> pos;
 
 void setPos();
 
@@ -17,10 +18,25 @@ void GetHeight (uint3 id : SV_DispatchThreadID)
 {
     // TODO: insert actual code here!
     //heightRT[id.xy] = float4(0, (id.x + id.y) % 8 * HeightScale, 0.0, 0.0);
-    float r = inputTexture[id.xy].r;
-    float g = inputTexture[id.xy].g;
-    float b = inputTexture[id.xy].b;
-    heightRT[id.xy] = float4(r, g, b, 1.0);
+    // float r = inputTexture[id.xy].r;
+    // float g = inputTexture[id.xy].g;
+    // float b = inputTexture[id.xy].b;
+    // heightRT[id.xy] = float4(r, g, b, 1.0);
+
+
+    if(id.x == pos[0].x && id.y == pos[0].y)
+        heightRT[id.xy] = float4(1, 1, 1, 1.0);
+    else
+        heightRT[id.xy] = float4(0, 0, 1, 1.0);
+
+    
+    // float dx = id.x - pos[0].x;
+    // float dy = id.y - pos[0].y;
+    // float disSqr = dx * dx + dy * dy;
+    // int hasCol = step(0, pos[0].z - disSqr);
+    // if (hasCol == 1) {
+    //     heightRT[id.xy] = pos[0].w;
+    // }
 }
 
 void setPos()

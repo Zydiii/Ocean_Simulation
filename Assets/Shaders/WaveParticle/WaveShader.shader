@@ -17,9 +17,12 @@ Shader "Wave/WaveShader"
 
         #include "UnityCG.cginc"
         #include "Lighting.cginc"
+        #include "WaveUtils.cginc"
 
+        float time;
         sampler2D _HeightTex;
         float4 _HeightTex_ST;
+            
 
         struct appdata
         {
@@ -35,12 +38,15 @@ Shader "Wave/WaveShader"
             float4 screenPosition : TEXCOORD2;
         };
 
+        static const float2 WAVE_DIR[9] = { float2(0, 0), float2(1, 0), float2(0, 1), float2(-1, 0), float2(0, -1), float2(1, 1), float2(-1, 1), float2(-1, -1), float2(1, -1) };
+
         v2f vert(appdata v)
         {
             v2f o;
-            o.uv = TRANSFORM_TEX(v.uv, _HeightTex);
+            //o.uv = TRANSFORM_TEX(v.uv, _HeightTex);
+            o.uv = 1 - v.uv;
             float4 displace = tex2Dlod(_HeightTex, float4(o.uv, 0, 0));
-            v.vertex += float4(displace.xyz, 0);
+            //v.vertex += float4(displace.xyz, 0);
             o.pos = UnityObjectToClipPos(v.vertex);
             o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
             o.screenPosition = ComputeScreenPos(o.pos);
@@ -49,8 +55,15 @@ Shader "Wave/WaveShader"
 
         fixed4 surf (v2f i) : SV_Target
         {
-            fixed4 col = tex2D(_HeightTex, i.uv);
-            return col;
+            float avgWaveHeight = 0;
+            for (int s = 0; s < 9; s++)
+            {
+				avgWaveHeight += DecodeHeight(tex2D(_HeightTex, i.uv + WAVE_DIR[s] * 0.1));
+            }
+            
+            // fixed4 col = tex2D(_HeightTex, i.uv);
+            // return col;
+             return EncodeHeight(avgWaveHeight);
         }
         ENDCG
         }

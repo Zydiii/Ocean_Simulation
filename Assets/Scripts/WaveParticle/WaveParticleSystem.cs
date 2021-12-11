@@ -19,7 +19,7 @@ public class WaveParticleSystem : MonoBehaviour
     {
         _waveParticles = new List<WaveParticle>();
         time = 0;
-        _waveParticles.Add(new WaveParticle(new Vector3(0, 0, 0), 1, new Vector3(1, 0, 0), 30, time));
+        _waveParticles.Add(new WaveParticle(new Vector3(-2, 0, -2), 0.05f, new Vector3(1, 0, 1), 30, time));
     }
 
     // Update is called once per frame
