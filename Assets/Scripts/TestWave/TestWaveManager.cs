@@ -138,7 +138,7 @@ public class TestWaveManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //WaterPlaneCollider();
+        WaterPlaneCollider();
         SphereTest();
         WaterMark();
         test.SetTexture("_MainTex", m_waveTransmitTexture);
