@@ -23,6 +23,8 @@ Shader "Unlit/DrawShader"
 
             sampler2D _SourceTex;
             float4 _Pos;
+            uniform int count;
+            uniform sampler1D array;
 
             struct v2f
             {
@@ -41,8 +43,16 @@ Shader "Unlit/DrawShader"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                float2 uv = i.uv;
-                return max(_Pos.z - length(uv - _Pos.xy) / _Pos.z, 0) + tex2D(_SourceTex, uv).x;
+                // float total = 0;
+                // for(int k = 0; k < count; k++)
+                // {
+                //     float p = 1.0 / float(count - 1);
+                //     float2 value = tex1D(array, k * p).xy;
+                //     total = max(total, max(1 - length(i.uv - value.xy) / value.z, 0));
+                // }
+                
+                return max(1 - length(i.uv - _Pos.xy) / _Pos.z, 0) + tex2D(_SourceTex, i.uv).x;
+                //return total;
             }
             ENDCG
         }

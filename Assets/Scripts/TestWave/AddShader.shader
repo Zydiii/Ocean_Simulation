@@ -35,7 +35,6 @@ Shader "Unlit/AddShader"
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
-                UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
             }
 

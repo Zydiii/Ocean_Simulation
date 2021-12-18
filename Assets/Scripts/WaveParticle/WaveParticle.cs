@@ -8,9 +8,9 @@ public class WaveParticle
     private float time0;
     private GameObject sphere;
 
-    public WaveParticle(Vector3 origin, float radius, Vector3 velocity, float dispersion, float time0)
+    public WaveParticle(Vector3 origin, float radius, Vector3 velocity, float dispersion, float amplitude, float time0)
     {
-        this.data = new WaveParticleData(origin, radius, velocity, dispersion);
+        this.data = new WaveParticleData(origin, radius, velocity, dispersion, amplitude);
         this.time0 = time0;
         sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         sphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
