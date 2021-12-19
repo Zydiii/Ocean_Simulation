@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,8 +11,11 @@ public class WaveParticleData
     public float dispersion;
     public Vector3 pos;
     public float amplitude;
+    public float timeToSubdivide;
+    public float spawnTime;
+    public float subdivideTimeCount;
 
-    public WaveParticleData(Vector3 origin, float radius, Vector3 velocity, float dispersion, float amplitude)
+    public WaveParticleData(Vector3 origin, float radius, Vector3 velocity, float dispersion, float amplitude, float spawnTime)
     {
         this.origin = origin;
         this.radius = radius;
@@ -19,5 +23,7 @@ public class WaveParticleData
         this.dispersion = dispersion;
         this.pos = origin;
         this.amplitude = amplitude;
+        this.timeToSubdivide = this.radius / (2.0f * (float)Math.Tan(dispersion * 0.5f) * velocity.magnitude);
+        this.spawnTime = spawnTime;
     }
 }

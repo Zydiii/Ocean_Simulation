@@ -117,7 +117,7 @@ public class TestWaveScript : MonoBehaviour
     void Update()
     {
         _waveParticles = WaveParticleSystem.Instance._waveParticles;
-        if (_waveParticles == null)
+        if (_waveParticles == null || _waveParticles.Count == 0)
             return;
 
         //Texture2D input = new Texture2D(_waveParticles.Count, 1, TextureFormat.RGBA32, false);
