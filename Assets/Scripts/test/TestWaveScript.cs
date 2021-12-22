@@ -48,6 +48,11 @@ public class TestWaveScript : MonoBehaviour
     private RenderTexture m_TmpHeightFieldRT;
 
     public Material waterMaterial;
+
+    public RenderTexture interactiveRenderTexture;
+    public Shader edgeDetectionShader;
+    private Material edgeDetectionMaterial;
+    private RenderTexture interactiveObject;
     
     // Start is called before the first frame update
     void Start()
@@ -85,6 +90,9 @@ public class TestWaveScript : MonoBehaviour
         
         m_TmpHeightFieldRT = new RenderTexture( waveParticlePointRT );
 
+        edgeDetectionMaterial = new Material(edgeDetectionShader);
+
+        interactiveObject = new RenderTexture(size, size, 0, RenderTextureFormat.ARGBFloat);
     }
     
     private void DrawWaveParticlePoints(float x, float y, float radius, float index)
@@ -178,10 +186,11 @@ public class TestWaveScript : MonoBehaviour
         
         waterMaterial.SetTexture("_MainTex", waveParticlePointRT);
         
-        texMaterial.SetTexture("_MainTex", waveParticlePointRT);
-        image.texture = posTex;
+        Graphics.Blit(interactiveRenderTexture, interactiveObject, edgeDetectionMaterial);
+        image.texture = interactiveObject;
         
-
+        texMaterial.SetTexture("_MainTex", interactiveObject);
+        
         // Texture2D tex = new Texture2D(size, size);        
         // for (int i = 0; i < _waveParticles.Count; i++)
         // {

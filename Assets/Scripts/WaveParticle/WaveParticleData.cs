@@ -23,7 +23,8 @@ public class WaveParticleData
         this.dispersion = dispersion;
         this.pos = origin;
         this.amplitude = amplitude;
-        this.timeToSubdivide = this.radius / (2.0f * (float)Math.Tan( dispersion * 0.5f) * velocity.magnitude);
+        //this.timeToSubdivide = this.radius / (2.0f * (float)Math.Tan( dispersion * 0.5f) * velocity.magnitude);
+        this.timeToSubdivide = 0.5f * this.radius / (dispersion * velocity.magnitude);
         this.spawnTime = spawnTime;
     }
 }

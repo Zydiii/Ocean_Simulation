@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 
@@ -45,7 +46,7 @@ public class WaveParticleSystem : MonoBehaviour
             WaveParticle particle = _waveParticles[i];
             particle.updatePos(time);
             checkSubdivide(particle);
-            checkDestroy(particle);
+            //checkDestroy(particle);
         }
 
     }
@@ -63,8 +64,8 @@ public class WaveParticleSystem : MonoBehaviour
             Vector3 leftWavePos = particle.data.origin + leftWaveVelocity * distanceTraveled;
             Vector3 rightWavePos = particle.data.origin + rightWaveVelocity * distanceTraveled;
             particle.updateSub();
-            _waveParticles.Add(new WaveParticle(leftWavePos, particle.data.radius, leftWaveVelocity, newAngle, newHeight, time));
-            _waveParticles.Add(new WaveParticle(rightWavePos, particle.data.radius, rightWaveVelocity, newAngle, newHeight, time));
+            _waveParticles.Add(new WaveParticle(particle.data.origin, particle.data.radius, leftWaveVelocity, newAngle, newHeight, particle.data.spawnTime));
+            _waveParticles.Add(new WaveParticle(particle.data.origin, particle.data.radius, rightWaveVelocity, newAngle, newHeight, particle.data.spawnTime));
         }
     }
 
@@ -79,10 +80,10 @@ public class WaveParticleSystem : MonoBehaviour
 
     void createTestPoint()
     {
-        _waveParticles.Add(new WaveParticle(new Vector3(-5, 0, -5), initRadius, new Vector3(1, 0, 1), initHeight, initHeight, time));
-        _waveParticles.Add(new WaveParticle(new Vector3(5, 0, 5), initRadius, new Vector3(-1, 0, -1), initHeight, initHeight, time));
+        _waveParticles.Add(new WaveParticle(new Vector3(-5, 0, -5), initRadius, new Vector3(1, 0, 1), initAngle, initHeight, time));
+        _waveParticles.Add(new WaveParticle(new Vector3(5, 0, 5), initRadius, new Vector3(-1, 0, -1), initAngle, initHeight, time));
         _waveParticles.Add(new WaveParticle(new Vector3(5, 0, -5), initRadius, new Vector3(-1, 0, 1), initAngle, initHeight, time));
-        _waveParticles.Add(new WaveParticle(new Vector3(-5, 0, 5), initRadius, new Vector3(1, 0, -1), initHeight, initHeight, time));
+        _waveParticles.Add(new WaveParticle(new Vector3(-5, 0, 5), initRadius, new Vector3(1, 0, -1), initAngle, initHeight, time));
     }
     void createPoint()
     {
@@ -93,4 +94,11 @@ public class WaveParticleSystem : MonoBehaviour
                 new WaveParticle(new Vector3(0, 0, 0), initRadius, velocity, initAngle, initHeight, time));
         }
     }
+
+    // private void OnCollisionEnter(Collision collision)
+    // {
+    //     Debug.Log("test");
+    //     collision.gameObject.GetComponent<Rigidbody>().useGravity = false;
+    //     collision.gameObject.GetComponent<BoxCollider>().enabled = false;
+    // }
 }
