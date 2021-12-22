@@ -49,13 +49,14 @@ Shader "FluidSim/WaveFilter"
             for( float idx = TEXEL_WIDTH_IN_WORLD; idx < _WaveParticleRadius; idx += TEXEL_WIDTH_IN_WORLD ) {
                 texOffset += TEXEL_WIDTH;
                 
-                float ampL = tex2D(_MainTex, float2( i.uv.x + texOffset, i.uv.y ) );
-                float ampR = tex2D(_MainTex, float2( i.uv.x - texOffset, i.uv.y ) );
+                float4 ampL = tex2D(_MainTex, float2( i.uv.x + texOffset, i.uv.y ) );
+                float4 ampR = tex2D(_MainTex, float2( i.uv.x - texOffset, i.uv.y ) );
                 
-                //div.x += (ampL - ampR) * -sqrt(2.0)/2.0 * sin( PI * idx / WAVE_PARTICLE_RADIUS ) * ( cos( PI * idx / WAVE_PARTICLE_RADIUS) + 1.0f );
-                div.x += (ampL - ampR) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f ) * 2.0 * -0.5 * sin( PI * idx / _WaveParticleRadius );
-                div.y += (ampL + ampR) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f );
-                div.z += (ampL + ampR) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f ) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f );
+                //div.x += (ampL - ampR) * -sqrt(2.0)/2.0 * sin( PI * idx / _WaveParticleRadius ) * ( cos( PI * idx / _WaveParticleRadius) + 1.0f );
+                div.x += (ampL.x + ampR.x) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f );
+                //div.x += (ampL - ampR) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f ) * 2.0 * -0.5 * sin( PI * idx / _WaveParticleRadius );
+                //div.y += (ampL + ampR) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f );
+                //div.z += (ampL + ampR) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f ) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f );
             }
             
             return div;
@@ -74,13 +75,14 @@ Shader "FluidSim/WaveFilter"
                 float4 ampB = tex2D( _MainTex, float2( i.uv.x, i.uv.y + texOffset ) );
                 float4 ampT = tex2D( _MainTex, float2( i.uv.x, i.uv.y - texOffset ) );
                 
-                div.x += (ampB.x + ampT.x) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f ) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f );
-                div.y += (ampB.y + ampT.y) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f );
-                div.z += (ampB.z - ampT.z) * 2.0f * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f ) * -0.5 * sin( PI * idx / _WaveParticleRadius );
+                //div.x += (ampB.x + ampT.x) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f ) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f );
+                div.x += (ampB.x + ampT.x) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f );
+                //div.y += (ampB.y + ampT.y) * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f );
+                //div.z += (ampB.z + ampT.z) * 2.0f * 0.5f * ( cos( PI * idx / _WaveParticleRadius) + 1.0f ) * -0.5 * sin( PI * idx / _WaveParticleRadius );
             }
             
             // Scale XY offset of the wave
-            div.xz *= 0.1f;
+            div.x *= 0.1f;
             
             return div;
         }

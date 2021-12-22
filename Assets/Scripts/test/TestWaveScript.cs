@@ -46,6 +46,8 @@ public class TestWaveScript : MonoBehaviour
     public Shader waveFilterShader;
     private Material waveFilterMaterial;
     private RenderTexture m_TmpHeightFieldRT;
+
+    public Material waterMaterial;
     
     // Start is called before the first frame update
     void Start()
@@ -82,6 +84,7 @@ public class TestWaveScript : MonoBehaviour
         waveFilterMaterial = new Material(waveFilterShader);
         
         m_TmpHeightFieldRT = new RenderTexture( waveParticlePointRT );
+
     }
     
     private void DrawWaveParticlePoints(float x, float y, float radius, float index)
@@ -158,6 +161,11 @@ public class TestWaveScript : MonoBehaviour
             pixData[ x0y1 ] += _waveParticles[i].data.amplitude * ( 1.0f - dX ) * dY;
             pixData[ x1y1 ] += _waveParticles[i].data.amplitude * dX            * dY;
             
+            // pixData[ x0y0 ] += _waveParticles[i].data.amplitude;
+            // pixData[ x1y0 ] += _waveParticles[i].data.amplitude;
+            // pixData[ x0y1 ] += _waveParticles[i].data.amplitude;
+            // pixData[ x1y1 ] += _waveParticles[i].data.amplitude;
+            
             //DrawWaveParticlePoints(pos.x / gameObject.GetComponent<MeshFilter>().mesh.bounds.size.x + 0.5f, pos.z / gameObject.GetComponent<MeshFilter>().mesh.bounds.size.z + 0.5f, _waveParticles[i].data.radius, 0);
             //input.SetPixel(i, 0, new Color(pos.x / gameObject.GetComponent<MeshFilter>().mesh.bounds.size.x + 0.5f, pos.z / gameObject.GetComponent<MeshFilter>().mesh.bounds.size.z + 0.5f, 0.0f, 1.0f));
         }
@@ -168,9 +176,10 @@ public class TestWaveScript : MonoBehaviour
         Graphics.Blit( posTex, m_TmpHeightFieldRT, waveFilterMaterial, pass: 0 );
         Graphics.Blit( m_TmpHeightFieldRT, waveParticlePointRT, waveFilterMaterial, pass: 1 ); 
         
-
+        waterMaterial.SetTexture("_MainTex", waveParticlePointRT);
+        
         texMaterial.SetTexture("_MainTex", waveParticlePointRT);
-        image.texture = waveParticlePointRT;
+        image.texture = posTex;
         
 
         // Texture2D tex = new Texture2D(size, size);        

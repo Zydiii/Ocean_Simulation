@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,6 +27,7 @@ public class WaveParticle
         data.amplitude /= 3;
         data.dispersion /= 3;
         data.subdivideTimeCount = 0;
+        data.timeToSubdivide = data.radius / (2.0f * (float)Math.Tan( data.dispersion * 0.5f) * data.velocity.magnitude);
     }
     
 }

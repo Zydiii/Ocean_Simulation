@@ -26,18 +26,14 @@ public class WaveParticleSystem : MonoBehaviour
     {
         _waveParticles = new List<WaveParticle>();
         time = 0;
-        minHeight = 0.1f;
+        minHeight = 1.0f;
         initVelocity = new Vector3(1.0f, 0.0f, 0.0f);
-        initAngle = 30.0f;
-        initHeight = 100.0f;
-        initRadius = 1.0f;
+        initAngle = 15.0f * ((float)Math.PI / 180.0f);
+        initHeight = 5.0f;
+        initRadius = 0.5f;
 
         createPoint();
-        //_waveParticles.Add(new WaveParticle(new Vector3(-5, 0, -5), initRadius, new Vector3(1, 0, 1), initAngle, initHeight, time));
-        //_waveParticles.Add(new WaveParticle(new Vector3(5, 0, 5), 0.15f, new Vector3(-1, 0, -1), 30, 10, time));
-        //_waveParticles.Add(new WaveParticle(new Vector3(5, 0, -5), initRadius, new Vector3(-1, 0, 1), initAngle, initHeight, time));
-        //_waveParticles.Add(new WaveParticle(new Vector3(-5, 0, 5), 0.15f, new Vector3(1, 0, -1), 30, 10, time));
-
+        //createTestPoint();
     }
 
     // Update is called once per frame
@@ -57,13 +53,12 @@ public class WaveParticleSystem : MonoBehaviour
     void checkSubdivide(WaveParticle particle)
     {
         particle.data.subdivideTimeCount += Time.deltaTime;
-        if (particle.data.subdivideTimeCount > particle.data.spawnTime)
+        if (particle.data.subdivideTimeCount > particle.data.timeToSubdivide)
         {
-            particle.data.subdivideTimeCount = 0;
             float newAngle  = particle.data.dispersion  / 3.0f;
             float newHeight =  particle.data.amplitude / 3.0f;
-            Vector3 leftWaveVelocity = Quaternion.AngleAxis(-newAngle, Vector3.up) * particle.data.velocity;
-            Vector3 rightWaveVelocity = Quaternion.AngleAxis(newAngle, Vector3.up) * particle.data.velocity;
+            Vector3 leftWaveVelocity = Quaternion.AngleAxis(-newAngle * 180 / (float)Math.PI, Vector3.up) * particle.data.velocity;
+            Vector3 rightWaveVelocity = Quaternion.AngleAxis(newAngle * 180 / (float)Math.PI, Vector3.up) * particle.data.velocity;
             float distanceTraveled = Vector3.Distance(particle.data.origin, particle.data.pos);
             Vector3 leftWavePos = particle.data.origin + leftWaveVelocity * distanceTraveled;
             Vector3 rightWavePos = particle.data.origin + rightWaveVelocity * distanceTraveled;
@@ -82,11 +77,18 @@ public class WaveParticleSystem : MonoBehaviour
         }
     }
 
+    void createTestPoint()
+    {
+        _waveParticles.Add(new WaveParticle(new Vector3(-5, 0, -5), initRadius, new Vector3(1, 0, 1), initHeight, initHeight, time));
+        _waveParticles.Add(new WaveParticle(new Vector3(5, 0, 5), initRadius, new Vector3(-1, 0, -1), initHeight, initHeight, time));
+        _waveParticles.Add(new WaveParticle(new Vector3(5, 0, -5), initRadius, new Vector3(-1, 0, 1), initAngle, initHeight, time));
+        _waveParticles.Add(new WaveParticle(new Vector3(-5, 0, 5), initRadius, new Vector3(1, 0, -1), initHeight, initHeight, time));
+    }
     void createPoint()
     {
-        for (float rot = 0; rot < 360; rot += 30)
+        for (float rot = 0; rot < 2 * Math.PI; rot += initAngle)
         {
-            Vector3 velocity = Quaternion.AngleAxis(-rot, Vector3.up) * initVelocity;
+            Vector3 velocity = Quaternion.AngleAxis(-rot * 180 / (float)Math.PI, Vector3.up) * initVelocity;
             _waveParticles.Add(
                 new WaveParticle(new Vector3(0, 0, 0), initRadius, velocity, initAngle, initHeight, time));
         }
