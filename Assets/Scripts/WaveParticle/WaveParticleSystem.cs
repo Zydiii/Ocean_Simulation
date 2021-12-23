@@ -28,12 +28,12 @@ public class WaveParticleSystem : MonoBehaviour
         _waveParticles = new List<WaveParticle>();
         time = 0;
         minHeight = 1.0f;
-        initVelocity = new Vector3(1.0f, 0.0f, 0.0f);
-        initAngle = 15.0f * ((float)Math.PI / 180.0f);
+        initVelocity = new Vector3(5.0f, 0.0f, 0.0f);
+        initAngle = 10.0f * ((float)Math.PI / 180.0f);
         initHeight = 5.0f;
         initRadius = 0.5f;
 
-        createPoint();
+        //createPoint(new Vector3(0, 0, 0), initHeight);
         //createTestPoint();
     }
 
@@ -46,7 +46,7 @@ public class WaveParticleSystem : MonoBehaviour
             WaveParticle particle = _waveParticles[i];
             particle.updatePos(time);
             checkSubdivide(particle);
-            //checkDestroy(particle);
+            checkDestroy(particle);
         }
 
     }
@@ -71,7 +71,7 @@ public class WaveParticleSystem : MonoBehaviour
 
     void checkDestroy(WaveParticle particle)
     {
-        if (particle.data.amplitude < minHeight)
+        if (Math.Abs(particle.data.amplitude) < Math.Abs(minHeight) || time - particle.data.spawnTime > 5)
         {
             _waveParticles.Remove(particle);
             Destroy(particle.sphere);
@@ -85,13 +85,22 @@ public class WaveParticleSystem : MonoBehaviour
         _waveParticles.Add(new WaveParticle(new Vector3(5, 0, -5), initRadius, new Vector3(-1, 0, 1), initAngle, initHeight, time));
         _waveParticles.Add(new WaveParticle(new Vector3(-5, 0, 5), initRadius, new Vector3(1, 0, -1), initAngle, initHeight, time));
     }
-    void createPoint()
+    void createPoint(Vector3 center, float amplitude)
     {
         for (float rot = 0; rot < 2 * Math.PI; rot += initAngle)
         {
             Vector3 velocity = Quaternion.AngleAxis(-rot * 180 / (float)Math.PI, Vector3.up) * initVelocity;
             _waveParticles.Add(
-                new WaveParticle(new Vector3(0, 0, 0), initRadius, velocity, initAngle, initHeight, time));
+                new WaveParticle(center, initRadius, velocity, initAngle, amplitude, time));
+        }
+    }
+
+    public void generateNewWave(float volume, Vector3 velocity, Vector3 pos)
+    {
+        if (pos.y < this.transform.position.y)
+        {
+            float amplitude = initHeight * Vector3.Dot(velocity, new Vector3(0, 1, 0));
+            createPoint(new Vector3(pos.x, this.transform.position.y, pos.z), amplitude);
         }
     }
 

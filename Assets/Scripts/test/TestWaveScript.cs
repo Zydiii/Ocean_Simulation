@@ -53,6 +53,11 @@ public class TestWaveScript : MonoBehaviour
     public Shader edgeDetectionShader;
     private Material edgeDetectionMaterial;
     private RenderTexture interactiveObject;
+
+    public GameObject Cube;
+    private float CubeAface;
+    private Vector3 CubeVelocity;
+    private float CubeVolume;
     
     // Start is called before the first frame update
     void Start()
@@ -93,6 +98,7 @@ public class TestWaveScript : MonoBehaviour
         edgeDetectionMaterial = new Material(edgeDetectionShader);
 
         interactiveObject = new RenderTexture(size, size, 0, RenderTextureFormat.ARGBFloat);
+
     }
     
     private void DrawWaveParticlePoints(float x, float y, float radius, float index)
@@ -127,6 +133,10 @@ public class TestWaveScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        checkAFace();
+
+        WaveParticleSystem.Instance.generateNewWave(CubeVolume, CubeVelocity, Cube.transform.position);
+        
         _waveParticles = WaveParticleSystem.Instance._waveParticles;
         if (_waveParticles == null || _waveParticles.Count == 0)
             return;
@@ -190,7 +200,9 @@ public class TestWaveScript : MonoBehaviour
         image.texture = interactiveObject;
         
         texMaterial.SetTexture("_MainTex", interactiveObject);
+
         
+
         // Texture2D tex = new Texture2D(size, size);        
         // for (int i = 0; i < _waveParticles.Count; i++)
         // {
@@ -235,6 +247,14 @@ public class TestWaveScript : MonoBehaviour
         // finalSahder.SetTexture("_HeightTex", rt1);
 
     }
+
+    void checkAFace()
+    {
+        CubeVelocity = Cube.GetComponent<CubeMotion>().velocity;
+        CubeAface = Cube.transform.localScale.x * Cube.transform.localScale.z;
+        CubeVolume = CubeAface * Vector3.Dot(CubeVelocity, new Vector3(0, -1, 0)) * Time.deltaTime;
+    }
+    
 
     private void OnDestroy()
     {

@@ -42,7 +42,7 @@ Shader "FluidSim/Water_02"
                 v2f o;
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 float4 div = tex2Dlod(_MainTex, float4(o.uv, 0, 0));
-                float4 vertexPos = float4(v.vertex.x, v.vertex.y + max(div.r, 0), v.vertex.z, 0);
+                float4 vertexPos = float4(v.vertex.x, v.vertex.y + min(max(div.r, 0), 1), v.vertex.z, 0);
                 //float4 vertexPos = v.vertex;
                 //vertexPos.y += div.r;
                 o.vertex = UnityObjectToClipPos(vertexPos);
