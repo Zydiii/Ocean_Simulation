@@ -70,6 +70,7 @@ Shader "OceanSimulation/Ocean"
             float _FoamMinDistance;
             sampler2D _CameraOpaqueTexture;
             sampler2D sampler_CameraOpaqueTexture;
+            sampler2D _WaveResult;
             
             v2f vert(appdata v)
             {
@@ -83,6 +84,9 @@ Shader "OceanSimulation/Ocean"
                 float4 displace = tex2Dlod(_Displace, float4(o.uv, 0, 0));
                 // 获得模型坐标
                 v.vertex += float4(displace.xyz, 0);
+                float4 waveTransmit = tex2Dlod(_WaveResult, float4(v.uv, 0, 0));
+                float waveHeight = DecodeFloatRGBA(waveTransmit);
+                v.vertex.y += waveHeight * 10;
                 // 屏幕坐标
                 o.pos = UnityObjectToClipPos(v.vertex);
                 // 世界坐标
@@ -258,6 +262,15 @@ Shader "OceanSimulation/Ocean"
                 float3 foamColor = lerp(_BubblesColor.rbg, waterColor, foamDepthDifference01);
                 //col = waterColor ;
 
+                float4 waveTransmit = tex2Dlod(_WaveResult, float4(i.uv, 0, 0));
+                float waveHeight = DecodeFloatRGBA(waveTransmit);
+                if(waveHeight < 0.1)
+                    return fixed4(col, 1);
+                else
+                {
+                    sky = lerp(col, _BubblesColor, waveHeight / 2);
+                    return fixed4(sky, 1);
+                }
                 return fixed4(col, 1);
             }
             

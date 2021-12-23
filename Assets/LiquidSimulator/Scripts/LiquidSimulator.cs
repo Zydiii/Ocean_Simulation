@@ -1,9 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-/// <summary>
-/// 液体模拟器
-/// </summary>
 public class LiquidSimulator : MonoBehaviour
 {
     #region public
@@ -100,8 +97,7 @@ public class LiquidSimulator : MonoBehaviour
         m_SampleCamera.Init(liquidWidth, liquidLength, liquidDepth, m_ForceFactor,
             new Vector4(transform.up.x, transform.up.y, transform.up.z,
                 -Vector3.Dot(transform.up, transform.position)), m_LiquidParams, heightMapSize, mask);
-
-
+        
         m_LiquidMeshRenderer = gameObject.GetComponent<MeshRenderer>();
         if (m_LiquidMeshRenderer == null)
             m_LiquidMeshRenderer = gameObject.AddComponent<MeshRenderer>();

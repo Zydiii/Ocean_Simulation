@@ -96,7 +96,7 @@ Material:
     - _BubblesColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _OceanColorDeep: {r: 0.050980393, g: 0.14509805, b: 0.20784314, a: 1}
-    - _OceanColorShallow: {r: 0.30588236, g: 0.47058824, b: 0.54901963, a: 1}
+    - _OceanColorDeep: {r: 0.060697734, g: 0.21107154, b: 0.31132078, a: 1}
+    - _OceanColorShallow: {r: 0.39518803, g: 0.6200953, b: 0.7264151, a: 1}
     - _Specular: {r: 0.3301887, g: 0.3301887, b: 0.3301887, a: 1}
   m_BuildTextureStacks: []

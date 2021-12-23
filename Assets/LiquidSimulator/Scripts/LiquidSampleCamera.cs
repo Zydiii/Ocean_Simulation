@@ -1,10 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
 using System.Collections;
+using UnityEngine.UI;
 
-/// <summary>
-/// 液体高度采样相机
-/// </summary>
 public class LiquidSampleCamera : MonoBehaviour
 {
     private Camera m_Camera;
@@ -21,6 +19,8 @@ public class LiquidSampleCamera : MonoBehaviour
 
     private CommandBuffer m_CommandBuffer;
     private Material m_ForceMaterial;
+
+    private RawImage test;
 
     public void DrawRenderer(Renderer renderer)
     {
@@ -87,6 +87,8 @@ public class LiquidSampleCamera : MonoBehaviour
         m_WaveEquationMat.SetTexture("_Mask", mask);
         m_NormalGenerateMat = new Material(Shader.Find("Hidden/NormalGen"));
         m_WaveEquationMat.SetVector("_WaveParams", m_WaveParams);
+
+        test = GameObject.Find("RawImage").GetComponent<RawImage>();
     }
 
     void OnRenderImage(RenderTexture src, RenderTexture dst)
@@ -99,11 +101,10 @@ public class LiquidSampleCamera : MonoBehaviour
         Graphics.Blit(dst, m_HeightMap);
 
         Graphics.Blit(m_HeightMap, m_NormalMap, m_NormalGenerateMat);
-
-
+        
         Graphics.Blit(src, m_PreTexture);
 
-
+        test.texture = m_PreTexture;
     }
 
     void OnPostRender()
