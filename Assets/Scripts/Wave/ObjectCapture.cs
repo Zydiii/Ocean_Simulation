@@ -9,21 +9,22 @@ public class ObjectCapture : MonoBehaviour
     private Matrix4x4 m_LocalMatrix;
     private float moveForward = 0;
     private float moveLeft = 0;
+    private float rotate = 0;
 
     void Start()
     {
-        m_Renderer = gameObject.GetComponent<Renderer>();
-        m_LocalMatrix = transform.localToWorldMatrix;
+        //m_Renderer = gameObject.GetComponent<Renderer>();
+        //m_LocalMatrix = transform.localToWorldMatrix;
     }
 
-    void OnRenderObject()
-    {
-        if (m_Renderer && m_LocalMatrix != transform.localToWorldMatrix)
-        {
-            m_LocalMatrix = transform.localToWorldMatrix;
-            FFTOceanRunner.Instance.SphereTest(this.gameObject);
-        }
-    }
+    // void OnRenderObject()
+    // {
+    //     if (m_Renderer && m_LocalMatrix != transform.localToWorldMatrix)
+    //     {
+    //         m_LocalMatrix = transform.localToWorldMatrix;
+    //         FFTOceanRunner.Instance.SphereTest(this.gameObject);
+    //     }
+    // }
 
     private void Update()
     {
@@ -32,14 +33,24 @@ public class ObjectCapture : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.DownArrow))
             moveForward = -1;
         if (Input.GetKeyDown(KeyCode.LeftArrow))
-            moveLeft = -1;
+            rotate = -1;
         if (Input.GetKeyDown(KeyCode.RightArrow))
-            moveLeft = 1;
+            rotate = 1;
         if (Input.GetKeyUp(KeyCode.UpArrow) || Input.GetKeyUp(KeyCode.DownArrow))
             moveForward = 0;
         if (Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
-            moveLeft = 0;
+            rotate = 0;
+        // if (Input.GetKeyDown(KeyCode.A))
+        //     rotate = 1;
+        // if (Input.GetKeyDown(KeyCode.D))
+        //     rotate = -1;
+        // if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.D))
+        // //  rotate = 0;
         
-        this.transform.Translate(new Vector3(Time.deltaTime * 50.0f * moveLeft, 0, Time.deltaTime * 50.0f * moveForward));
+        this.transform.RotateAround(Vector3.up, 1f * Time.deltaTime * rotate);
+        
+        this.transform.Translate(new Vector3(0, 0, Time.deltaTime * 100.0f * moveForward));
+        if(moveForward != 0 || rotate != 0)
+            FFTOceanRunner.Instance.SphereTest(this.gameObject);
     }
 }

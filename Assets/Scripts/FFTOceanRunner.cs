@@ -32,11 +32,7 @@ public class FFTOceanRunner : MonoBehaviour
     private Vector3[] vertices;    // 顶点位置
     private int[] triangles;		// 网格三角形索引
     private Vector2[] uvs; 			// uv坐标
-    /*
-     * 海洋深度
-     */
-    public float liquidDepth; // 深度
-    
+
     #endregion
 
     #region 海面波浪相关参数
@@ -62,17 +58,8 @@ public class FFTOceanRunner : MonoBehaviour
     #endregion
 
     #region 计算波传递相关参数
-    [Header("波传递相关参数")]
-    public int heightMapSize;
-    public Texture2D mask;
-    public float m_Viscosity; // 粘度系数
-    public float m_Velocity; // 波速
-    public float m_ForceFactor; // 力度系数
-    private LiquidSampleCamera m_SampleCamera; // 采样相机
-    private Vector4 m_LiquidParams; // 波传递初始系数
-    private float m_SampleSpacing; // 采样间隔，d
-    private Vector4 m_LiquidArea; // 液体区域
     
+    [Header("波传递相关参数")]
     private Material m_waterWaveMarkMat;
     private Material m_waveTransmitMat;
     Vector4 m_waveMarkParams;
@@ -81,12 +68,10 @@ public class FFTOceanRunner : MonoBehaviour
     private RenderTexture m_prevWaveMarkTexture;
     public RenderTexture objectRenderTexture;
     public Camera objectCamera;
-
     public Shader addShader;
     private Material addMaterial;
+    private RenderTexture TempRT;
     
-    public RenderTexture TempRT;
-
     #endregion
 
     #region 显示相关
@@ -100,6 +85,7 @@ public class FFTOceanRunner : MonoBehaviour
     public Material NormalMat;      // 法线材质
     public Material BubblesMat;     // 泡沫材质
     public Material GuassianMat;    // 高斯随机数材质
+    public Material WaveMat; // 波材质
     [Header("UI 显示纹理，暂时没有用到")]
     public RawImage NormalUI; // 法线
     public RawImage BubblesUI; // 泡沫
@@ -143,19 +129,17 @@ public class FFTOceanRunner : MonoBehaviour
         // 设置海面网格
         GenerateOceanMesh();
         // 生成波采样相机
-        GenerateSampleCamera();
+        //GenerateSampleCamera();
         // 生成反射相机
-        gameObject.AddComponent<ReflectCamera>();
+        //gameObject.AddComponent<ReflectCamera>();
         // 生成波系数
-        RefreshLiquidParams(m_Velocity, m_Viscosity);
+        //RefreshLiquidParams(m_Velocity, m_Viscosity);
         //
         Shader.SetGlobalTexture("_WaveResult", m_waterWaveMarkTexture);
         Shader.SetGlobalFloat("_WaveHeight", WaveHeight);
         //
         objectCamera.orthographicSize = MeshLength / 2;
         addMaterial = new Material(addShader);
-        
-        
     }
     
     /// <summary>
@@ -202,25 +186,10 @@ public class FFTOceanRunner : MonoBehaviour
         mesh.uv = uvs;
         mesh.triangles = triangles;
         // 设置液面区域
-        m_LiquidArea = new Vector4(transform.position.x - MeshLength * 0.5f,
-            transform.position.z - MeshLength * 0.5f,
-            transform.position.x + MeshLength * 0.5f, transform.position.z + MeshLength * 0.5f);
-        this.gameObject.GetComponent<MeshCollider>().sharedMesh = mesh;
-    }
-
-    /// <summary>
-    /// 生成采样相机
-    /// </summary>
-    private void GenerateSampleCamera()
-    {
-        m_SampleSpacing = 1.0f / heightMapSize;
-        m_SampleCamera = new GameObject("[LiquidSampleCamera]").AddComponent<LiquidSampleCamera>();
-        m_SampleCamera.transform.SetParent(transform);
-        m_SampleCamera.transform.localPosition = Vector3.zero;
-        m_SampleCamera.transform.localEulerAngles = new Vector3(90,0,0);
-        m_SampleCamera.Init(MeshLength, MeshLength, liquidDepth, m_ForceFactor,
-            new Vector4(transform.up.x, transform.up.y, transform.up.z,
-                -Vector3.Dot(transform.up, transform.position)), m_LiquidParams, heightMapSize, mask);
+        // m_LiquidArea = new Vector4(transform.position.x - MeshLength * 0.5f,
+        //     transform.position.z - MeshLength * 0.5f,
+        //     transform.position.x + MeshLength * 0.5f, transform.position.z + MeshLength * 0.5f);
+        // this.gameObject.GetComponent<MeshCollider>().sharedMesh = mesh;
     }
 
     #endregion
@@ -444,7 +413,8 @@ public class FFTOceanRunner : MonoBehaviour
         DisplaceMat.SetTexture("_MainTex", DisplaceRT);
         NormalMat.SetTexture("_MainTex", NormalRT);
         BubblesMat.SetTexture("_MainTex", BubblesRT);
-        //GuassianMat.SetTexture("_MainTex", GaussianRandomRT);
+        GuassianMat.SetTexture("_MainTex", GaussianRandomRT);
+        WaveMat.SetTexture("_MainTex", m_waveTransmitTexture);
     }
 
     #endregion
@@ -474,14 +444,6 @@ public class FFTOceanRunner : MonoBehaviour
     
     #region 波相关计算
 
-    public static void DrawObject(Renderer renderer)
-    {
-        if (Instance != null)
-        {
-            Instance.m_SampleCamera.DrawRenderer(renderer); 
-        }
-    }
-    
     public void SphereTest(GameObject sphere)
     {
         if (sphere.transform.position.y < 10)
@@ -490,13 +452,14 @@ public class FFTOceanRunner : MonoBehaviour
             float dx = (waterPlaneSpacePos.x / MeshLength) + 0.5f;
             float dy = (waterPlaneSpacePos.z / MeshLength) + 0.5f;
 
-            hitPos.Set(dx, dy);
-            //m_waveMarkParams.Set(dx, dy, WaveRadius * WaveRadius, WaveHeight);
+            //hitPos.Set(dx, dy);
+            m_waveMarkParams.Set(0, 0, WaveRadius * WaveRadius, WaveHeight);
             hasHit = true;
-            WaterMark();
+            //WaterMark();
             //RenderTexture rt = new RenderTexture(fftSize, fftSize, 0, RenderTextureFormat.Default);
             
             addMaterial.SetTexture("_MainTex", m_waterWaveMarkTexture);
+            addMaterial.SetTexture("_Tex", objectRenderTexture);
             Graphics.Blit(null, TempRT, addMaterial);
             RenderTexture rt = TempRT;
             TempRT = m_waterWaveMarkTexture;
@@ -512,70 +475,7 @@ public class FFTOceanRunner : MonoBehaviour
             hasHit = false;
         }
     }
-
-    public static void DrawMesh(Mesh mesh, Matrix4x4 matrix)
-    {
-        if (Instance != null)
-        {
-            Instance.m_SampleCamera.ForceDrawMesh(mesh, matrix);
-        }
-    }
-
-    void OnWillRenderObject()
-    {
-        Shader.SetGlobalVector("_LiquidArea", m_LiquidArea);
-    }
     
-    private bool RefreshLiquidParams(float speed, float viscosity)
-    {
-        if (speed <= 0)
-        {
-            Debug.LogError("波速不允许小于等于0！");
-            return false;
-        }
-        if (viscosity <= 0)
-        {
-            Debug.LogError("粘度系数不允许小于等于0！");
-            return false;
-        }
-        float maxvelocity = m_SampleSpacing / (2 * Time.fixedDeltaTime) * Mathf.Sqrt(viscosity * Time.fixedDeltaTime + 2);
-        float velocity = maxvelocity * speed;
-        float viscositySq = viscosity * viscosity;
-        float velocitySq = velocity * velocity;
-        float deltaSizeSq = m_SampleSpacing * m_SampleSpacing;
-        float dt = Mathf.Sqrt(viscositySq + 32 * velocitySq / (deltaSizeSq));
-        float dtden = 8 * velocitySq / (deltaSizeSq);
-        float maxT = (viscosity + dt) / dtden;
-        float maxT2 = (viscosity - dt) / dtden;
-        if (maxT2 > 0 && maxT2 < maxT)
-            maxT = maxT2;
-        if (maxT < Time.fixedDeltaTime)
-        {
-            Debug.LogError("粘度系数不符合要求");
-            return false;
-        }
-
-        float fac = velocitySq * Time.fixedDeltaTime * Time.fixedDeltaTime / deltaSizeSq;
-        float i = viscosity * Time.fixedDeltaTime - 2;
-        float j = viscosity * Time.fixedDeltaTime + 2;
-
-        float k1 = (4 - 8 * fac) / (j);
-        float k2 = i / j;
-        float k3 = 2 * fac / j;
-
-        m_LiquidParams = new Vector4(k1, k2, k3, m_SampleSpacing);
-        
-        m_Velocity = speed;
-        m_Viscosity = viscosity;
-
-        return true;
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        Utils.DrawWireCube(transform.position, transform.eulerAngles.y, MeshLength, MeshLength, -liquidDepth, 0, Color.green);
-    }
-
     #endregion
 
     #region 结束释放内存
@@ -630,7 +530,7 @@ public class FFTOceanRunner : MonoBehaviour
         {
             m_waterWaveMarkMat.SetVector("_WaveMarkParams", m_waveMarkParams);
             Graphics.Blit(m_waveTransmitTexture, m_waterWaveMarkTexture, m_waterWaveMarkMat);
-            GuassianMat.SetTexture("_MainTex", m_waterWaveMarkTexture);
+            //assianMat.SetTexture("_MainTex", m_waterWaveMarkTexture);
         }
     }
     
@@ -646,7 +546,7 @@ public class FFTOceanRunner : MonoBehaviour
         Graphics.Blit(rt, m_waterWaveMarkTexture);
         Graphics.Blit(rt, m_waveTransmitTexture);
         RenderTexture.ReleaseTemporary(rt);
-        GuassianMat.SetTexture("_MainTex", m_waveTransmitTexture);
+        //GuassianMat.SetTexture("_MainTex", m_waveTransmitTexture);
     }
 
     void InitWaveTransmitParams()
@@ -688,8 +588,8 @@ public class FFTOceanRunner : MonoBehaviour
 
         m_waveTransmitParams.Set(p1, p2, p3, uvStep);
 
-        Debug.LogFormat("i {0} j {1} maxSpeed {2}", i, j, maxWaveStepVisosity);
-        Debug.LogFormat("p1 {0} p2 {1} p3 {2}", p1, p2, p3);
+        //Debug.LogFormat("i {0} j {1} maxSpeed {2}", i, j, maxWaveStepVisosity);
+        //Debug.LogFormat("p1 {0} p2 {1} p3 {2}", p1, p2, p3);
     }
 
     #endregion

@@ -30,6 +30,7 @@ Shader "Unlit/AddShader"
 
             sampler2D _MainTex;
             sampler2D _CameraDepthTexture;
+            sampler2D _Tex;
             //sampler2D _Tex2;
 
             v2f vert (appdata v)
@@ -43,7 +44,7 @@ Shader "Unlit/AddShader"
             fixed4 frag (v2f i) : SV_Target
             {
                 //return tex2D(_MainTex, i.uv);
-                return tex2D(_MainTex, i.uv) + EncodeHeight(tex2D(_CameraDepthTexture, i.uv).r);
+                return tex2D(_MainTex, i.uv) + EncodeHeight(tex2D(_Tex, i.uv));
             }
             ENDCG
         }
