@@ -83,10 +83,15 @@ Shader "OceanSimulation/Ocean"
                 // 这个函数需要一个4分量vector，其x和y是uv空间中熟悉的纹理坐标， w表示从哪个mip级别采样（0是可用的最高分辨率）
                 float4 displace = tex2Dlod(_Displace, float4(o.uv, 0, 0));
                 // 获得模型坐标
-                v.vertex += float4(displace.xyz, 0);
+                //v.vertex.xz += displace.xz;
                 float4 waveTransmit = tex2Dlod(_WaveResult, float4(v.uv, 0, 0));
                 float waveHeight = DecodeFloatRGBA(waveTransmit);
-                v.vertex.y += waveHeight * 10;
+                //if(waveHeight < 0.1)
+                     v.vertex.xyz += displace.xyz;
+                //else
+                     v.vertex.y += waveHeight * 10;
+                // if(waveHeight > 0.5)
+                //     v.vertex.y = 0;
                 // 屏幕坐标
                 o.pos = UnityObjectToClipPos(v.vertex);
                 // 世界坐标

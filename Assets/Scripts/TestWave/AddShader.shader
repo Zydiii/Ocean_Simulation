@@ -14,6 +14,7 @@ Shader "Unlit/AddShader"
             #pragma vertex vert
             #pragma fragment frag
             #include "UnityCG.cginc"
+            #include "WaveUtils.cginc"
 
             struct appdata
             {
@@ -27,8 +28,9 @@ Shader "Unlit/AddShader"
                 float4 vertex : SV_POSITION;
             };
 
-            sampler2D _Tex1;
-            sampler2D _Tex2;
+            sampler2D _MainTex;
+            sampler2D _CameraDepthTexture;
+            //sampler2D _Tex2;
 
             v2f vert (appdata v)
             {
@@ -40,7 +42,8 @@ Shader "Unlit/AddShader"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                return tex2D(_Tex1, i.uv) + tex2D(_Tex2, i.uv);
+                //return tex2D(_MainTex, i.uv);
+                return tex2D(_MainTex, i.uv) + EncodeHeight(tex2D(_CameraDepthTexture, i.uv).r);
             }
             ENDCG
         }

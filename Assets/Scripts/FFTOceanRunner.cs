@@ -79,6 +79,13 @@ public class FFTOceanRunner : MonoBehaviour
     private RenderTexture m_waterWaveMarkTexture;
     private RenderTexture m_waveTransmitTexture;
     private RenderTexture m_prevWaveMarkTexture;
+    public RenderTexture objectRenderTexture;
+    public Camera objectCamera;
+
+    public Shader addShader;
+    private Material addMaterial;
+    
+    public RenderTexture TempRT;
 
     #endregion
 
@@ -144,7 +151,11 @@ public class FFTOceanRunner : MonoBehaviour
         //
         Shader.SetGlobalTexture("_WaveResult", m_waterWaveMarkTexture);
         Shader.SetGlobalFloat("_WaveHeight", WaveHeight);
-
+        //
+        objectCamera.orthographicSize = MeshLength / 2;
+        addMaterial = new Material(addShader);
+        
+        
     }
     
     /// <summary>
@@ -231,6 +242,9 @@ public class FFTOceanRunner : MonoBehaviour
         m_prevWaveMarkTexture.name = "m_prevWaveMarkTexture";
         // 
         InitWaveTransmitParams();
+        //
+        TempRT = new RenderTexture(fftSize, fftSize, 0, RenderTextureFormat.Default);
+        TempRT.Create();
     }
     
     /// <summary>
@@ -477,9 +491,20 @@ public class FFTOceanRunner : MonoBehaviour
             float dy = (waterPlaneSpacePos.z / MeshLength) + 0.5f;
 
             hitPos.Set(dx, dy);
-            m_waveMarkParams.Set(dx, dy, WaveRadius * WaveRadius, WaveHeight);
+            //m_waveMarkParams.Set(dx, dy, WaveRadius * WaveRadius, WaveHeight);
             hasHit = true;
             WaterMark();
+            //RenderTexture rt = new RenderTexture(fftSize, fftSize, 0, RenderTextureFormat.Default);
+            
+            addMaterial.SetTexture("_MainTex", m_waterWaveMarkTexture);
+            Graphics.Blit(null, TempRT, addMaterial);
+            RenderTexture rt = TempRT;
+            TempRT = m_waterWaveMarkTexture;
+            m_waterWaveMarkTexture = rt;
+            //TempRT = CurrentRT;
+            //CurrentRT = rt;
+            //m_waterWaveMarkTexture = rt;
+            //BubblesMat.SetTexture("_MainTex", m_waterWaveMarkTexture);
             WaveTransmit();
         }        
         else
