@@ -71,6 +71,7 @@ Shader "OceanSimulation/Ocean"
             sampler2D _CameraOpaqueTexture;
             sampler2D sampler_CameraOpaqueTexture;
             sampler2D _WaveResult;
+            sampler2D _Tex;
             
             v2f vert(appdata v)
             {
@@ -86,12 +87,13 @@ Shader "OceanSimulation/Ocean"
                 //v.vertex.xz += displace.xz;
                 float4 waveTransmit = tex2Dlod(_WaveResult, float4(v.uv, 0, 0));
                 float waveHeight = DecodeFloatRGBA(waveTransmit);
-                //if(waveHeight < 0.1)
-                     v.vertex.xyz += displace.xyz;
-                //else
-                     v.vertex.y += waveHeight * 10;
-                // if(waveHeight > 0.5)
-                //     v.vertex.y = 0;
+                float4 x = tex2Dlod(_Tex, float4(v.uv, 0, 0));
+                //if(x.r < 0.01)
+                {
+                    v.vertex.xyz += displace.xyz;
+                    v.vertex.y += waveHeight * 10;
+                }
+
                 // 屏幕坐标
                 o.pos = UnityObjectToClipPos(v.vertex);
                 // 世界坐标

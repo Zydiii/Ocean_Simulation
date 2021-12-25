@@ -1771,13 +1771,15 @@ GameObject:
   - component: {fileID: 1489542169}
   - component: {fileID: 1489542168}
   - component: {fileID: 1489542172}
+  - component: {fileID: 1489542174}
+  - component: {fileID: 1489542173}
   m_Layer: 8
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!65 &1489542168
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1849,7 +1851,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1489542167}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 8, z: 80}
+  m_LocalPosition: {x: 100, y: 20, z: 80}
   m_LocalScale: {x: 20, y: 20, z: 20}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1862,11 +1864,43 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1489542167}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5f0a1c7752583fe44aca0bb7f29b2ac5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1489542173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1489542167}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db306d5409c13247aeaba774b002c85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buoyantForce: 8
+  depthPower: 0.5
+  offsetY: 0
+  waterVolumeTag: Water
+--- !u!54 &1489542174
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1489542167}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1517146680
 GameObject:
   m_ObjectHideFlags: 0
@@ -2659,9 +2693,11 @@ GameObject:
   - component: {fileID: 2115281522}
   - component: {fileID: 2115281521}
   - component: {fileID: 2115281523}
+  - component: {fileID: 2115281524}
+  - component: {fileID: 2115281525}
   m_Layer: 0
   m_Name: Ocean
-  m_TagString: Untagged
+  m_TagString: Water
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2800,11 +2836,38 @@ MeshCollider:
   m_GameObject: {fileID: 2115281517}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 4
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!114 &2115281524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2115281517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c4f49e314853c64abdef5f8252be345, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  customSurfaceLevel: 1
+  surfaceLevel: 0
+--- !u!65 &2115281525
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2115281517}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1024, y: 100, z: 1024}
+  m_Center: {x: 0, y: -40, z: 0}
 --- !u!1 &2127494579
 GameObject:
   m_ObjectHideFlags: 0

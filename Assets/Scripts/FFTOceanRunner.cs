@@ -406,6 +406,7 @@ public class FFTOceanRunner : MonoBehaviour
         OceanMaterial.SetTexture("_Normal", NormalRT);
         OceanMaterial.SetTexture("_Bubbles", BubblesRT);
         OceanMaterial.SetTexture("_WaveResult", m_waveTransmitTexture);
+        OceanMaterial.SetTexture("_Tex", objectRenderTexture);
         //设置显示纹理
         DisplaceXMat.SetTexture("_MainTex", DisplaceXSpectrumRT);
         DisplaceYMat.SetTexture("_MainTex", HeightSpectrumRT);

@@ -2,23 +2,23 @@
 
 ## 基于 FFT 构建海面网格
 
-![](./results/1.gif)
+![](./Results/1.gif)
 
 ## 基础光照模型
 
-![](./results/2.gif)
+![](./Results/2.gif)
 
 ## 菲涅尔视效
 
-![](./results/3.gif)
+![](./Results/3.gif)
 
 ## 开启深度检测和岸边白沫
 
-![](./results/4.png)
+![](./Results/4.png)
 
 ## 船只交互产生水波
 
-![](./results/5.gif)
+![](./Results/5.gif)
 
 ## 参考资料
 

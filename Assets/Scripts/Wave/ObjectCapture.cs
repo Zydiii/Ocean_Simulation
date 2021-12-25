@@ -10,6 +10,7 @@ public class ObjectCapture : MonoBehaviour
     private float moveForward = 0;
     private float moveLeft = 0;
     private float rotate = 0;
+    private float time = 0.6f;
 
     void Start()
     {
@@ -50,7 +51,15 @@ public class ObjectCapture : MonoBehaviour
         this.transform.RotateAround(Vector3.up, 1f * Time.deltaTime * rotate);
         
         this.transform.Translate(new Vector3(0, 0, Time.deltaTime * 100.0f * moveForward));
-        if(moveForward != 0 || rotate != 0)
+        if (moveForward != 0 || rotate != 0)
+        {
+            time += Time.deltaTime;
+        }
+
+        if (time > 0.2f)
+        {
+            time = 0;
             FFTOceanRunner.Instance.SphereTest(this.gameObject);
+        }
     }
 }
