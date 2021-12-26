@@ -265,8 +265,11 @@ public class TestWaveScript : MonoBehaviour
             Vector3 b = vertices[triangles[i * 3 + 1]];
             Vector3 c = vertices[triangles[i * 3 + 2]];
             Vector3 center = (a + b + c) / 3 + pos;
-            Vector3 n = (center - pos).normalized;
-            CubeVolume += 0.5f * Vector3.Cross(b - a, c - a).magnitude * Vector3.Dot(CubeVelocity, n) * Time.deltaTime;
+            if (center.y < this.transform.position.y)
+            {
+                Vector3 n = (center - pos).normalized;
+                CubeVolume += 0.5f * Vector3.Cross(b - a, c - a).magnitude * Vector3.Dot(CubeVelocity, n) * Time.deltaTime;
+            }
         }
         
         //CubeAface = Cube.transform.localScale.x * Cube.transform.localScale.z;

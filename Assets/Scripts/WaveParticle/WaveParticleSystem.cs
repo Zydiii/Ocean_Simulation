@@ -97,7 +97,7 @@ public class WaveParticleSystem : MonoBehaviour
 
     public void generateNewWave(float volume, Vector3 velocity, Vector3 pos)
     {
-        if (pos.y < this.transform.position.y)
+        if (pos.y < this.transform.position.y + 0.6f)
         {
             float amplitude = initHeight * Vector3.Dot(velocity, new Vector3(0, 1, 0));
             createPoint(new Vector3(pos.x, this.transform.position.y, pos.z), amplitude);

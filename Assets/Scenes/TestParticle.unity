@@ -334,6 +334,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   velocity: {x: 0, y: 1, z: 0}
   waterPos: {x: 0, y: 0, z: 0}
+  flag: 0
 --- !u!1 &174698822
 GameObject:
   m_ObjectHideFlags: 0
@@ -487,8 +488,8 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 10, y: 1, z: 10}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 10, y: 5, z: 10}
+  m_Center: {x: 0, y: -2.5, z: 0}
 --- !u!1 &207052344
 GameObject:
   m_ObjectHideFlags: 0
@@ -601,6 +602,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   velocity: {x: 0, y: 0, z: 0}
   waterPos: {x: 0, y: -1.78, z: 0}
+  flag: 0
 --- !u!54 &207052350
 Rigidbody:
   m_ObjectHideFlags: 0
