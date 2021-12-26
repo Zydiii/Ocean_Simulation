@@ -14,6 +14,7 @@ public class WaveParticle
         sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         sphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
         sphere.transform.parent = GameObject.Find("Plane").transform;
+        sphere.GetComponent<SphereCollider>().enabled = false;
     }
 
     public void updatePos(float time)

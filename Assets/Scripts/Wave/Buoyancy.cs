@@ -55,11 +55,6 @@ public class Buoyancy : MonoBehaviour
     //if this object floating on surface of water, returns true.
     public bool IsFloating() => isWaterBodySet && !(yBound > coll.bounds.max.y);
 
-
-
-    //  ▀▄▀▄▀▄ Trigger Functions ▄▀▄▀▄▀
-
-
     private void OnTriggerEnter(Collider water)
     {
         if (water.CompareTag(waterVolumeTag)) 

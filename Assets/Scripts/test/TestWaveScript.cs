@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -135,7 +136,11 @@ public class TestWaveScript : MonoBehaviour
     {
         checkAFace();
 
-        WaveParticleSystem.Instance.generateNewWave(CubeVolume, CubeVelocity, Cube.transform.position);
+        if (Cube.GetComponent<CubeMotion>().flag)
+        {
+            WaveParticleSystem.Instance.generateNewWave(CubeVolume, CubeVelocity, Cube.transform.position);
+            Cube.GetComponent<CubeMotion>().flag = false;
+        }
         
         _waveParticles = WaveParticleSystem.Instance._waveParticles;
         if (_waveParticles == null || _waveParticles.Count == 0)
@@ -197,7 +202,7 @@ public class TestWaveScript : MonoBehaviour
         waterMaterial.SetTexture("_MainTex", waveParticlePointRT);
         
         Graphics.Blit(interactiveRenderTexture, interactiveObject, edgeDetectionMaterial);
-        image.texture = interactiveObject;
+        image.texture = waveParticlePointRT;
         
         texMaterial.SetTexture("_MainTex", interactiveObject);
 
@@ -251,10 +256,23 @@ public class TestWaveScript : MonoBehaviour
     void checkAFace()
     {
         CubeVelocity = Cube.GetComponent<CubeMotion>().velocity;
-        CubeAface = Cube.transform.localScale.x * Cube.transform.localScale.z;
-        CubeVolume = CubeAface * Vector3.Dot(CubeVelocity, new Vector3(0, -1, 0)) * Time.deltaTime;
+        Vector3 pos = Cube.transform.position;
+        int[] triangles = Cube.GetComponent<MeshFilter>().mesh.triangles;
+        Vector3[] vertices = Cube.GetComponent<MeshFilter>().mesh.vertices;
+        for (int i = 0; i < triangles.Length / 3; i++)
+        {
+            Vector3 a = vertices[triangles[i * 3]];
+            Vector3 b = vertices[triangles[i * 3 + 1]];
+            Vector3 c = vertices[triangles[i * 3 + 2]];
+            Vector3 center = (a + b + c) / 3 + pos;
+            Vector3 n = (center - pos).normalized;
+            CubeVolume += 0.5f * Vector3.Cross(b - a, c - a).magnitude * Vector3.Dot(CubeVelocity, n) * Time.deltaTime;
+        }
+        
+        //CubeAface = Cube.transform.localScale.x * Cube.transform.localScale.z;
+        //CubeVolume = CubeAface * Vector3.Dot(CubeVelocity, new Vector3(0, -1, 0)) * Time.deltaTime;
     }
-    
+
 
     private void OnDestroy()
     {

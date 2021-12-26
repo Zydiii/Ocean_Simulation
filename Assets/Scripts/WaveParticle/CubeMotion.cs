@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,6 +16,7 @@ public class CubeMotion : MonoBehaviour
     private float density = 1f;
     private float displacedVolume;
     public Vector3 waterPos = new Vector3(0, -1.78f, 0);
+    public bool flag = false;
     
     private void Awake()
     {
@@ -34,6 +36,7 @@ public class CubeMotion : MonoBehaviour
         getBuoyancy(waterPos);
         
         velocity += Force / mass * Time.deltaTime;
+        //velocity *= 0.995f;
         transform.position += velocity * Time.deltaTime;
         //velocity *= -1;
     }
@@ -43,5 +46,15 @@ public class CubeMotion : MonoBehaviour
         displacedVolume = (waterPos.y - this.transform.position.y) * 1;
         if(displacedVolume > 0)
             Force -= gravity * density * displacedVolume;
+    }
+    
+    private void OnTriggerEnter(Collider other)
+    {
+        flag = true;
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        flag = true;
     }
 }
