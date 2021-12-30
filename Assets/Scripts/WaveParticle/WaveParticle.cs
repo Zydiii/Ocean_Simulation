@@ -6,20 +6,21 @@ using UnityEngine;
 public class WaveParticle
 {
     public WaveParticleData data;
-    public GameObject sphere;
+    //public GameObject sphere;
 
-    public WaveParticle(Vector3 origin, float radius, Vector3 velocity, float dispersion, float amplitude, float spawnTime)
+    public WaveParticle(Vector3 origin, float radius, Vector3 velocity, float dispersion, float amplitude, float spawnTime, float time)
     {
         this.data = new WaveParticleData(origin, radius, velocity, dispersion, amplitude, spawnTime);
-        sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        sphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-        sphere.transform.parent = GameObject.Find("Plane").transform;
-        sphere.GetComponent<SphereCollider>().enabled = false;
+        // sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        // sphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        // sphere.transform.parent = GameObject.Find("Water").transform;
+        // sphere.GetComponent<SphereCollider>().enabled = false;
+        updatePos(time);
     }
 
     public void updatePos(float time)
     {
-        sphere.transform.position = data.pos;
+        //sphere.transform.position = data.pos;
         data.pos = data.origin + (time - data.spawnTime) * data.velocity;
     }
 

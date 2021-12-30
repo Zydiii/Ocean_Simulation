@@ -1,8 +1,8 @@
-Shader "FluidSim/Water_02"
+Shader "Buoyancy/WaterShader"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
+        _MainTex ("Texture", 2D) = "Black" {}
         _Color ("Color", Color) = (1,1,1,1)
         _Skybox ("Skybox", Cube) = "defaulttexture" {}
     }
@@ -42,12 +42,10 @@ Shader "FluidSim/Water_02"
                 v2f o;
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 float4 div = tex2Dlod(_MainTex, float4(o.uv, 0, 0));
-                float4 vertexPos = float4(v.vertex.x, v.vertex.y + min(max(div.r, 0), 1), v.vertex.z, 0);
-                //float4 vertexPos = v.vertex;
-                //vertexPos.y += div.r;
+                float4 vertexPos = v.vertex;
+                vertexPos.y += div.r;
                 o.vertex = UnityObjectToClipPos(vertexPos);
                 o.worldViewDir = WorldSpaceViewDir(vertexPos);
-
                 return o;
             }
 
@@ -69,14 +67,14 @@ Shader "FluidSim/Water_02"
                 
                 float4 waveTransmit = tex2Dlod(_MainTex, float4(i.uv, 0, 0));
                 float waveHeight = DecodeFloatRGBA(waveTransmit);
-                if(waveTransmit.r < 0.1)
+                    
+                
+                if(waveHeight.r < 0.01 && waveHeight.r > -0.01)
                     return float4(0.8, 0.9, 1.0,1.0) * reflectCol;
                 else
                 {
                     return float4(1, 1, 1.0,1.0);
                 }
-                //return float4(0.0, 0.0, 0.0, 1.0);
-
             }
             ENDCG
         }
