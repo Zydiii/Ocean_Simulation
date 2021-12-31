@@ -34,8 +34,8 @@ public class WaveParticleSystem : MonoBehaviour
         initAngle = 360.0f * ((float)Math.PI / 180.0f);
         initAngle1 = 180.0f * ((float)Math.PI / 180.0f);
         initAngle2 = 10.0f * ((float)Math.PI / 180.0f);
-        initHeight = 5.0f;
-        initRadius = 0.5f;
+        initHeight = 10.0f;
+        initRadius = 0.3f;
 
         //createPoint(new Vector3(0, 0, 0), initHeight);
         //createTestPoint();
@@ -107,9 +107,16 @@ public class WaveParticleSystem : MonoBehaviour
         //     //createPoint(new Vector3(pos.x, this.transform.position.y, pos.z), amplitude);
         //     _waveParticles.Add(new WaveParticle(new Vector3(pos.x, this.transform.position.y, pos.z), initRadius, new Vector3(1, 0, 1), initAngle, Math.Abs(amplitude), time, time));
         // }
-        float amplitude = initHeight * volume;
-        _waveParticles.Add(new WaveParticle(new Vector3(pos.x, pos.y, pos.z), initRadius, new Vector3(1, 0, 1), initAngle, Math.Abs(amplitude), time, time));
-
+        if (velocity.x == 0 && velocity.z == 0)
+        {
+            float amplitude = initHeight * volume;
+            _waveParticles.Add(new WaveParticle(pos, initRadius, new Vector3(1, 0, 1), initAngle, amplitude, time, time));
+        }
+        else if(Math.Abs(velocity.x) > 1.0f || Math.Abs(velocity.z) > 1.0f)
+        {
+            _waveParticles.Add(new WaveParticle(pos, initRadius, new Vector3(-velocity.x, 0, velocity.z), initAngle1, initHeight * 0.05f, time, time));
+        }
+        
     }
 
     // private void OnCollisionEnter(Collision collision)
