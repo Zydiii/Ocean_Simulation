@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,7 +21,7 @@ public class FFTOceanRunner : MonoBehaviour
     /*
      * 海面大小
      */
-    private int fftSize;			// 海面实际 (纹理) 大小, pow(2, FFTPow), 相当于 Lx = Lz
+    public int fftSize;			// 海面实际 (纹理) 大小, pow(2, FFTPow), 相当于 Lx = Lz
     /*
      * 海面网格组件
      */
@@ -74,6 +76,19 @@ public class FFTOceanRunner : MonoBehaviour
     
     #endregion
 
+    #region 波动粒子
+
+    private Texture2D particlePosTex;
+    NativeArray<float> pixData;
+    private List<WaveParticle> _waveParticles;
+    public Shader waveFilterShader;
+    private Material waveFilterMaterial;
+    private RenderTexture m_TmpHeightFieldRT;
+    private RenderTexture waveParticlePointRT;
+    public Material texMaterial;
+
+    #endregion
+    
     #region 显示相关
     
     [Header("显示材质")]
@@ -214,6 +229,13 @@ public class FFTOceanRunner : MonoBehaviour
         //
         TempRT = new RenderTexture(fftSize, fftSize, 0, RenderTextureFormat.Default);
         TempRT.Create();
+        //
+        particlePosTex = new Texture2D(fftSize, fftSize, TextureFormat.RFloat, false, true);
+        pixData = particlePosTex.GetRawTextureData<float>();
+        _waveParticles = WaveParticleSystem.Instance._waveParticles;
+        waveFilterMaterial = new Material(waveFilterShader);
+        m_TmpHeightFieldRT = CreateRT(fftSize, "tmp");
+        waveParticlePointRT = CreateRT(fftSize, "particle");
     }
     
     /// <summary>
@@ -292,6 +314,56 @@ public class FFTOceanRunner : MonoBehaviour
         WaterPlaneCollider();
         WaterMark();
         WaveTransmit();
+        //
+        generatePosTex();
+    }
+    
+    void generatePosTex()
+    {
+        if(_waveParticles == null)
+            _waveParticles = WaveParticleSystem.Instance._waveParticles;
+        if (_waveParticles.Count == 0)
+            return;
+        for( int i = 0; i < pixData.Length; i++ )
+        {
+            pixData[ i ] = 0;
+        }
+        
+        float texelW = 1.0f / fftSize;
+        float texelH = 1.0f / fftSize;
+        for (int i = 0; i < _waveParticles.Count; i++)
+        {
+            Vector3 pos = this.transform.worldToLocalMatrix * _waveParticles[i].data.pos;
+            Vector2 posInPlane = new Vector2(pos.x / this.GetComponent<MeshFilter>().mesh.bounds.size.x + 0.5f,
+                pos.z / this.GetComponent<MeshFilter>().mesh.bounds.size.z + 0.5f);
+            if (posInPlane.x <= 0.01 || posInPlane.y <= 0.01 || posInPlane.x >= 0.99 || posInPlane.y >= 0.99)
+                continue;
+            // Pixel coordinates with fractional parts
+            float xF = posInPlane.x / texelW;
+            float yF = posInPlane.y / texelH;
+            // Texture pixel indices
+            int x = (int)xF;
+            int y = (int)yF;
+            // Interpolation coefficients between texture indices
+            float dX = xF - x;
+            float dY = yF - y;
+            // Indices 
+            int x0y0 = x         + y         * fftSize;
+            int x1y0 = ( x + 1 ) + y         * fftSize;
+            int x0y1 = x         + ( y + 1 ) * fftSize;
+            int x1y1 = ( x + 1 ) + ( y + 1 ) * fftSize;
+            pixData[ x0y0 ] += _waveParticles[i].data.amplitude * ( 1.0f - dX ) * ( 1.0f - dY );
+            pixData[ x1y0 ] += _waveParticles[i].data.amplitude * dX            * ( 1.0f - dY );
+            pixData[ x0y1 ] += _waveParticles[i].data.amplitude * ( 1.0f - dX ) * dY;
+            pixData[ x1y1 ] += _waveParticles[i].data.amplitude * dX            * dY;
+        }
+        particlePosTex.Apply();
+        waveFilterMaterial.SetFloat( "_WaveParticleRadius", _waveParticles[0].data.radius);
+        Graphics.Blit( particlePosTex, m_TmpHeightFieldRT, waveFilterMaterial, pass: 0 );
+        Graphics.Blit( m_TmpHeightFieldRT, waveParticlePointRT, waveFilterMaterial, pass: 1 ); 
+        
+        texMaterial.SetTexture("_MainTex", particlePosTex);
+
     }
     
     /// <summary>

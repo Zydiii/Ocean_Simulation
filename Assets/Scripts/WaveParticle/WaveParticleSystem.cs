@@ -35,7 +35,7 @@ public class WaveParticleSystem : MonoBehaviour
         initAngle1 = 180.0f * ((float)Math.PI / 180.0f);
         initAngle2 = 10.0f * ((float)Math.PI / 180.0f);
         initHeight = 10.0f;
-        initRadius = 0.3f;
+        initRadius = 10.0f;
 
         //createPoint(new Vector3(0, 0, 0), initHeight);
         //createTestPoint();
@@ -109,8 +109,8 @@ public class WaveParticleSystem : MonoBehaviour
         // }
         if (velocity.x == 0 && velocity.z == 0)
         {
-            float amplitude = initHeight * volume;
-            _waveParticles.Add(new WaveParticle(pos, initRadius, new Vector3(1, 0, 1), initAngle, amplitude, time, time));
+            float amplitude = initHeight * volume * 100;
+            _waveParticles.Add(new WaveParticle(pos, initRadius, new Vector3(10, 0, 0), initAngle, amplitude, time, time));
         }
         else if(Math.Abs(velocity.x) > 1.0f || Math.Abs(velocity.z) > 1.0f)
         {

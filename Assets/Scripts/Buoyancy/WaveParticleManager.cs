@@ -18,7 +18,6 @@ public class WaveParticleManager : MonoBehaviour
     private RenderTexture waveParticlePointRT;
     public Material waterMaterial;
 
-    public RawImage debugImage;
     public GameObject water;
 
     public Material texMaterial;
@@ -26,6 +25,7 @@ public class WaveParticleManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //textureSize = FFTOceanRunner.Instance.fftSize;
         particlePosTex = new Texture2D(textureSize, textureSize, TextureFormat.RFloat, false, true);
         pixData = particlePosTex.GetRawTextureData<float>();
         _waveParticles = WaveParticleSystem.Instance._waveParticles;
@@ -86,8 +86,7 @@ public class WaveParticleManager : MonoBehaviour
         
         waterMaterial.SetTexture("_MainTex", waveParticlePointRT);
         
-        debugImage.texture = waveParticlePointRT;
-        texMaterial.SetTexture("_MainTex", waveParticlePointRT);
+        texMaterial.SetTexture("_MainTex", particlePosTex);
 
     }
     

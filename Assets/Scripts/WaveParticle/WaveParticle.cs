@@ -13,7 +13,7 @@ public class WaveParticle
         this.data = new WaveParticleData(origin, radius, velocity, dispersion, amplitude, spawnTime);
         // sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         // sphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-        // sphere.transform.parent = GameObject.Find("Water").transform;
+        // sphere.transform.parent = GameObject.Find("Ocean").transform;
         // sphere.GetComponent<SphereCollider>().enabled = false;
         updatePos(time);
     }

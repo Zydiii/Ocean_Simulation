@@ -21,7 +21,7 @@ public class BouyancyMotion : MonoBehaviour
     public Vector3 force;
 
     private float rhoWater = 1.0f;
-    private float rhoObject = 0.6f;
+    private float rhoObject = 0.5f;
     private float Aface;
     private float V;
 
@@ -37,7 +37,7 @@ public class BouyancyMotion : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        size = this.transform.GetComponent<MeshFilter>().mesh.bounds.size;
+        size = this.transform.GetComponent<MeshFilter>().mesh.bounds.size * this.transform.localScale.x;
         mass = rhoObject * size.x * size.z * size.y;
         Aface = size.x * size.z;
         initIref();
@@ -60,7 +60,7 @@ public class BouyancyMotion : MonoBehaviour
         if (inWater)
         {
             force -= rhoWater * gravity * vInWater;
-            force -= velocity * 0.5f;
+            force -= velocity * 4.5f;
             WaveParticleSystem.Instance.generateNewWave(V, velocity, this.transform.position);
         }
         velocity += force / mass * Time.deltaTime;
@@ -87,7 +87,7 @@ public class BouyancyMotion : MonoBehaviour
     void initIref()
     {
         vertices = this.transform.GetComponent<MeshFilter>().mesh.vertices;
-        m = 1.0f / vertices.Length;
+        m = mass / vertices.Length;
         for (int i = 0; i < vertices.Length; i++) 
         {
             float diag = m*vertices[i].sqrMagnitude;
