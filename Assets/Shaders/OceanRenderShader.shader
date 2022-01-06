@@ -91,9 +91,12 @@ Shader "OceanSimulation/Ocean"
                 //if(x.r < 0.01)
                 {
                     v.vertex.xyz += displace.xyz;
-                    v.vertex.y += waveHeight * 10;
+                    v.vertex.y += waveHeight * 5;
                 }
 
+                if(x.r > 0)
+                    v.vertex.y = 0;
+                
                 // 屏幕坐标
                 o.pos = UnityObjectToClipPos(v.vertex);
                 // 世界坐标
